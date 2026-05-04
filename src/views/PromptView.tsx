@@ -231,7 +231,7 @@ export function PromptView() {
                       return;
                     }
                   }}
-                  placeholder="Start building with Bismuth..."
+                  placeholder='Try: "a coffee mug" or "a parametric phone stand"'
                   type={type}
                   disabled={limitReached}
                   model={model}
