@@ -61,14 +61,35 @@ The bridge will pick it up within ~200ms and stream the artifact back.
 }
 ```
 
-The bridge runs `parseParameters(code)` over the OpenSCAD so any `name = number;` declaration at the top of the file becomes an interactive slider. Add comments for ranges:
+The bridge runs `parseParameters(code)` over the OpenSCAD so any `name = number;` declaration at the top of the file becomes an interactive slider. The trailing comment on each parameter line controls how the slider behaves:
 
 ```scad
-// Mug height
-mug_height = 80;       // [40:1:200]   min:step:max
-mug_radius = 30;       // [10:50]      min:max
+// Numeric ranges — three forms accepted:
+mug_height = 80;       // [40:1:200]    min : step : max
+mug_radius = 30;       // [10:50]       min : max  (step defaults to 1)
+$fn = 32;              // [12]          step only (when ranged elsewhere)
+
+// Multi-choice options (renders as a select):
+finish = "satin";      // [satin, gloss, matte]
+gridSize = 4;          // [2:two, 4:four, 8:eight]   value:label pairs
+
+// Strings with a max length:
+label_text = "Hi";     // [12]          max length 12
+
+// No comment? It still becomes a slider with sane auto-bounds.
 wall_thickness = 2.5;
+
+// Group params in the parameter panel with /* [Group Name] */:
+/* [Body] */
+body_width = 100;
+body_depth = 60;
+/* [Lid] */
+lid_thickness = 4;
 ```
+
+Names render directly as labels — `mug_radius` becomes "Mug Radius", `$fn` becomes "Resolution". Use full descriptive snake_case, never single letters. Color parameters with a `*_color` suffix and a CSS named color or hex default become a clickable color swatch in the panel.
+
+**Critical**: keep all parameter declarations BEFORE the first `module` or `function` keyword in the file. The parser stops there, so any `name = number;` line below a module definition is invisible to the slider system. Derived values like `leg_height = table_height - top_thickness;` belong below the raw inputs (and are correctly skipped because the value starts with a letter, not a number).
 
 ## What works / what doesn't
 
