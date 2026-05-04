@@ -1,0 +1,15 @@
+This distribution includes unmodified binaries from OpenSCAD WASM.
+
+License: GNU General Public License, version 2 or (at your option) any later version.
+This project distributes these binaries as part of a GPLv3 combined work.
+
+Current binary: OpenSCAD 2025.03.25.wasm24456 (git ce5039f8a)
+Source distribution:
+  https://files.openscad.org/playground/OpenSCAD-2025.03.25.wasm24456-WebAssembly-web.zip
+
+Upstream source code:
+  https://github.com/openscad/openscad
+
+No local modifications were made to these binaries by Adam AI Labs, Inc.
+If the above location becomes unavailable, contact: hello@adam.new
+
