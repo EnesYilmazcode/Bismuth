@@ -4,6 +4,15 @@
   "version": "0.1.0",
   "description": "Text-to-CAD that runs in your browser, with Claude Code as the model. Fork of CADAM with the SaaS backend replaced by a local bridge.",
   "type": "module",
+  "homepage": "https://github.com/EnesYilmazcode/Bismuth#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EnesYilmazcode/Bismuth.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EnesYilmazcode/Bismuth/issues"
+  },
+  "license": "GPL-3.0",
   "scripts": {
     "dev": "vite",
     "bridge": "node bridge/server.mjs",
