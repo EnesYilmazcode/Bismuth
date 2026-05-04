@@ -33,20 +33,25 @@ import EditorView from './views/EditorView.tsx';
 import SettingsView from './views/SettingsView.tsx';
 import { isSupabaseConfigMissing } from './lib/supabase.ts';
 
-Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN ?? '',
-  integrations: [
-    Sentry.reactRouterV6BrowserTracingIntegration({
-      useEffect: React.useEffect,
-      useLocation,
-      useNavigationType,
-      createRoutesFromChildren,
-      matchRoutes,
-    }),
-  ],
-  environment: import.meta.env.VITE_SENTRY_ENVIRONMENT ?? 'local',
-  tracesSampleRate: 1.0,
-});
+// Sentry stays installed so existing captureException callsites are valid,
+// but we skip init when no DSN is configured — otherwise the SDK warns
+// loudly in the console on every page load in local mode.
+if (import.meta.env.VITE_SENTRY_DSN) {
+  Sentry.init({
+    dsn: import.meta.env.VITE_SENTRY_DSN,
+    integrations: [
+      Sentry.reactRouterV6BrowserTracingIntegration({
+        useEffect: React.useEffect,
+        useLocation,
+        useNavigationType,
+        createRoutesFromChildren,
+        matchRoutes,
+      }),
+    ],
+    environment: import.meta.env.VITE_SENTRY_ENVIRONMENT ?? 'local',
+    tracesSampleRate: 1.0,
+  });
+}
 
 const sentryCreateBrowserRouter =
   Sentry.wrapCreateBrowserRouterV6(createBrowserRouter);
