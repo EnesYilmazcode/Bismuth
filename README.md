@@ -115,6 +115,36 @@ When the user drags a slider, the bridge re-parses without round-tripping throug
 └── .claude/            # per-area instructions for Claude Code
 ```
 
+## troubleshooting
+
+**Port 3000 already in use.** Vite is pinned with `strictPort: true` so it
+refuses to bounce to 3001/3002 (those silent shifts caused real confusion
+during development). Find the offender with `netstat -ano | grep 3000` on
+Windows or `lsof -i :3000` on macOS/Linux and stop it, or set
+`server.port` in `vite.config.ts` to a different value.
+
+**Page hangs or won't load after pulling new changes.** Hard refresh
+(Ctrl+Shift+R / Cmd+Shift+R). The most common cause is a stale tab still
+pointed at the old URL — Bismuth used to serve at `/cadam/`; it now serves
+at `/bismuth/`.
+
+**Prompt sits on "Thinking…" forever.** The bridge is waiting for a reply
+file. Make sure your Claude Code session is actually watching the bridge
+log for `PROMPT id=` lines and writing to `bridge/outbox/<id>.json`. The
+bridge times out after 10 minutes and surfaces a `Bridge error: reply
+timeout` message.
+
+**OpenSCAD WASM stuck on "Compiling…".** Some OpenSCAD constructs are
+expensive in WASM, in particular `hull()` of cylinders at large
+dimensions (table-scale or bigger). Prefer `linear_extrude(offset(square))`
+for rounded boxes; see `.claude/openscad-prompting.md` for the full
+playbook.
+
+**Conversation history vanished.** Open devtools → Application →
+Local Storage and look for the key `cadam-mock-db-v1`. (The key still uses
+the old name on purpose so existing sessions survived the rebrand. If
+you cleared it, history is gone — there's no server backup.)
+
 ## credits
 
 - Forked from [CADAM](https://github.com/Adam-CAD/CADAM) by Zach Dive, Aaron Li, Dylan Anderson — most of the frontend, the OpenSCAD viewer pipeline, and the parameter system are theirs.
