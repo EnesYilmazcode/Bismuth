@@ -7,6 +7,8 @@
 [![React](https://img.shields.io/badge/React-19.1-61DAFB.svg?style=flat&logo=react&logoColor=black)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF.svg?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![OpenSCAD](https://img.shields.io/badge/OpenSCAD-WASM-F9D64F.svg?style=flat)](https://openscad.org/)
+[![Local-only](https://img.shields.io/badge/runtime-local%20only-blueviolet?style=flat)](#what-it-is)
+[![Stars](https://img.shields.io/github/stars/EnesYilmazcode/Bismuth?style=flat&logo=github)](https://github.com/EnesYilmazcode/Bismuth/stargazers)
 
 ![Bismuth — table with rubber duck and a procedurally-generated maze, all live-editable via parameter sliders](./public/bismuth-hero.png)
 
