@@ -17,7 +17,7 @@
     "dev": "vite",
     "bridge": "node bridge/server.mjs",
     "build": "tsc -b && vite build",
-    "lint": "eslint . --ignore-pattern 'supabase/**'",
+    "lint": "eslint .",
     "typecheck": "tsc -b --noEmit",
     "format": "prettier --write .",
     "preview": "vite preview"
