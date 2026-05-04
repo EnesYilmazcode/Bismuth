@@ -3,7 +3,6 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { PanelLeft } from 'lucide-react';
 
 import { Sidebar } from './Sidebar';
-import { CreditsButton } from './CreditsButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -53,17 +52,9 @@ export function Layout() {
               movement: eases inward when the sidebar opens (so it lands
               inside the rounded panel) and back to the edge when it closes.
               The `!user` branch above returns early, so no `user` guard here. */}
-          {location.pathname === '/' && (
-            <div
-              className={`absolute z-20 transition-all duration-300 ease-in-out ${
-                isSidebarOpen && !isMobile
-                  ? 'right-[2.25rem] top-[2.25rem]'
-                  : 'right-3.5 top-3.5'
-              }`}
-            >
-              <CreditsButton />
-            </div>
-          )}
+          {/* Token-credits indicator removed: in local mode the bridge
+              returns a hardcoded huge balance, so the count was just
+              meaningless visual noise. */}
           {/* Toggle Sidebar Button - Positioned on main content area */}
           {!isMobile && user && (
             <Button
