@@ -6,7 +6,6 @@ import { SuggestionPills } from '@/components/chat/SuggestionPills';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { AssistantMessage } from '@/components/chat/AssistantMessage';
 import { UserMessage } from '@/components/chat/UserMessage';
-import { ShareContent } from '@/components/ui/ShareContent';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,12 +17,6 @@ import { LowPromptsWarningMessage } from '@/components/LowPromptsWarningMessage'
 import { CreateIcon } from '@/components/icons/ui/CreateIcon';
 import { ConditionalWrapper } from '@/components/ConditionalWrapper';
 import { TreeNode } from '@shared/Tree';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Share } from 'lucide-react';
 import { useMeshData } from '@/hooks/useMeshData';
 
 interface ChatSectionProps {
@@ -203,29 +196,9 @@ export function ChatSection({
             >
               <CreateIcon className="h-5 w-5 text-adam-text-primary" />
             </Button>
-          ) : (
-            <>
-              {updateConversation && (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="flex h-8 items-center gap-2 rounded-full px-3 text-adam-text-primary hover:bg-adam-neutral-950 hover:text-adam-neutral-10 focus-visible:ring-0"
-                    >
-                      <Share className="h-[14px] w-[14px] min-w-[14px]" />
-                      <span>Share</span>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    align="end"
-                    className="w-72 rounded-xl bg-adam-background-1 p-3"
-                  >
-                    <ShareContent />
-                  </PopoverContent>
-                </Popover>
-              )}
-            </>
-          )}
+          ) : null}
+          {/* Public share button removed: there's no real backend in local
+              mode, so a "share" link would 404 for anyone who opened it. */}
         </div>
       </div>
       <ScrollArea
