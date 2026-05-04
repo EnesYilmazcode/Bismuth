@@ -1,0 +1,5 @@
+{
+  "title": "Coffee Mug",
+  "text": "Here's a coffee mug — adjust mug_height / mug_radius / wall_thickness on the right.",
+  "code": "// Coffee mug\nmug_height = 100;       // [40:5:200]\nmug_radius = 35;        // [20:60]\nwall_thickness = 3;     // [1:0.5:8]\nhandle_outer = 28;      // [15:50]\nhandle_inner = 18;      // [8:40]\nmug_color = \"SteelBlue\";\n\nmodule torus(r1, r2) {\n  rotate_extrude($fn = 80)\n    translate([r1, 0, 0])\n    circle(r = (r1 - r2) / 2, $fn = 32);\n}\n\ncolor(mug_color)\ndifference() {\n  union() {\n    cylinder(h = mug_height, r = mug_radius, $fn = 64);\n    translate([mug_radius - 4, 0, mug_height / 2])\n      rotate([90, 0, 0])\n      torus(handle_outer, handle_inner);\n  }\n  translate([0, 0, wall_thickness])\n    cylinder(h = mug_height, r = mug_radius - wall_thickness, $fn = 64);\n}\n"
+}

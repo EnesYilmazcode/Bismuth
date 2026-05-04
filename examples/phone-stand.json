@@ -1,0 +1,5 @@
+{
+  "title": "Phone Stand",
+  "text": "Phone stand sized for a 6.7-inch handset. Adjust phone_thickness if you have a thick case.",
+  "code": "// Phone stand\nstand_width = 100;          // [60:5:160]\nstand_depth = 70;           // [40:5:120]\nstand_height = 90;          // [40:5:160]\nphone_thickness = 12;       // [6:1:25]\nslot_offset_y = 12;         // [4:25]\nslot_inset_z = 12;          // [4:30]\nstand_color = \"DimGray\";\n\ncolor(stand_color)\ndifference() {\n  cube([stand_width, stand_depth, stand_height]);\n  translate([\n    stand_width / 2 - phone_thickness / 2,\n    slot_offset_y,\n    slot_inset_z,\n  ])\n    cube([phone_thickness, stand_depth, stand_height]);\n}\n"
+}
