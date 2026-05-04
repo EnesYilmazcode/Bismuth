@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 
-const PAGE_URL = process.argv[2] || 'http://localhost:3001/cadam/';
+const PAGE_URL = process.argv[2] || 'http://localhost:3001/bismuth/';
 const PROMPT = process.argv[3] || 'a coffee mug';
 const REPLY = {
   text: "Here's a coffee mug.",

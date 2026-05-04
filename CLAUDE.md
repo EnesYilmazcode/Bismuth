@@ -1,4 +1,4 @@
-# CADAM — local "Claude is the model" fork
+# Bismuth — local "Claude is the model" fork of CADAM
 
 This is a fork of [CADAM](https://github.com/Adam-CAD/CADAM) (text-to-CAD web app) with the entire backend stripped out and replaced by a tiny local bridge that hands prompts to **Claude Code itself** as the model.
 
@@ -39,7 +39,7 @@ Browser  ──fetch──▶  Bridge (Node.js, :8765)  ──file──▶  bri
 npm install
 npm run bridge   # terminal 1: bridge on :8765
 npm run dev      # terminal 2: vite on :3000 (or :3001)
-# open http://localhost:3000/cadam/  (or 3001)
+# open http://localhost:3000/bismuth/  (or 3001)
 ```
 
 In Claude Code:

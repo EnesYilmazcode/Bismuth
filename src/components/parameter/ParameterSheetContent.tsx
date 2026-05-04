@@ -115,7 +115,7 @@ export function ParameterSheetContent({
         description:
           error instanceof Error
             ? error.message
-            : 'Adam could not export this model as DXF.',
+            : 'Bismuth could not export this model as DXF.',
         variant: 'destructive',
       });
     } finally {

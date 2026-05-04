@@ -8,7 +8,7 @@ export function PrivacyPolicyView() {
           <div className="mb-8 flex flex-col items-center justify-center">
             <img
               src={`${import.meta.env.BASE_URL}/adam-logo.svg`}
-              alt="Adam Logo"
+              alt="Bismuth Logo"
               className="mb-4 h-8 w-8"
             />
             <h1 className="text-center text-3xl font-semibold text-white">
@@ -26,9 +26,9 @@ export function PrivacyPolicyView() {
                   Overview
                 </h2>
                 <p className="text-gray-400">
-                  This Privacy Policy describes how AdamCAD ("we," "our," or
+                  This Privacy Policy describes how Bismuth ("we," "our," or
                   "us") collects, uses, and shares information about you when
-                  you use our website and services. By using AdamCAD, you agree
+                  you use our website and services. By using Bismuth, you agree
                   to the collection and use of information in accordance with
                   this policy.
                 </p>
@@ -44,7 +44,7 @@ export function PrivacyPolicyView() {
                       Information You Provide
                     </h3>
                     <p className="mb-2 text-gray-400">
-                      When you register for and use AdamCAD, we collect
+                      When you register for and use Bismuth, we collect
                       information that you provide directly to us, including:
                     </p>
                     <ul className="ml-4 list-inside list-disc text-gray-400">
@@ -89,7 +89,7 @@ export function PrivacyPolicyView() {
                   contact us at:
                 </p>
                 <div className="mt-2 text-gray-400">
-                  <p>AdamCAD</p>
+                  <p>Bismuth</p>
                   <p>Email: hello@adamcad.com</p>
                 </div>
               </section>

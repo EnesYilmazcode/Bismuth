@@ -90,7 +90,7 @@ async function waitForOutbox(id, signal) {
 
 function buildAssistantMessage(reply, ctx) {
   const code = (reply.code ?? '').trim();
-  const title = reply.title || 'Adam Object';
+  const title = reply.title || 'Bismuth Object';
   const text = reply.text;
   const content = { model: ctx.model };
   if (text) content.text = text;
@@ -224,7 +224,7 @@ async function handleTitleGenerator(req, res) {
     body?.content?.text ||
     body?.text ||
     (Array.isArray(body?.content?.images) && 'New image prompt') ||
-    'Adam Object';
+    'Bismuth Object';
   const cleaned = String(text)
     .trim()
     .replace(/\s+/g, ' ')
@@ -232,7 +232,7 @@ async function handleTitleGenerator(req, res) {
     .slice(0, 5)
     .join(' ');
   const title = cleaned.length > 27 ? cleaned.slice(0, 24) + '…' : cleaned;
-  send(res, 200, { title: title || 'Adam Object' });
+  send(res, 200, { title: title || 'Bismuth Object' });
 }
 
 async function handleBillingStatus(_req, res) {

@@ -122,7 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               if (await ensurePermission()) {
                 const notification = new Notification('3D model is ready', {
                   body: 'Your generated 3D model has finished. Click to open.',
-                  icon: `${import.meta.env.BASE_URL}/Adam-Logo.png`,
+                  icon: `${import.meta.env.BASE_URL}/adam-logo.svg`,
                 });
                 notification.onclick = () => {
                   window.focus();

@@ -11,14 +11,14 @@ type PlanCopy = {
 
 export const PLAN_FEATURES: Record<PlanLevel, PlanCopy> = {
   free: {
-    description: 'Get started with Adam',
+    description: 'Get started with Bismuth',
     features: ['All AI features', 'Community support'],
   },
   standard: {
     description: 'For regular use',
     features: [
       'All AI features',
-      'Tokens shared between CADAM and the Onshape extension',
+      'Tokens shared between Bismuth and the Onshape extension',
     ],
   },
   pro: {
@@ -26,7 +26,7 @@ export const PLAN_FEATURES: Record<PlanLevel, PlanCopy> = {
     features: [
       'All AI features',
       'Priority support',
-      'Tokens shared between CADAM and the Onshape extension',
+      'Tokens shared between Bismuth and the Onshape extension',
     ],
   },
 };

@@ -8,7 +8,7 @@
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF.svg?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![OpenSCAD](https://img.shields.io/badge/OpenSCAD-WASM-F9D64F.svg?style=flat)](https://openscad.org/)
 
-![Bismuth screenshot — coffee mug rendered with parameter sliders](./bridge/e2e-screenshot.png)
+![Bismuth — table with rubber duck and a procedurally-generated maze, all live-editable via parameter sliders](./public/bismuth-hero.png)
 
 ## what it is
 
@@ -52,7 +52,7 @@ npm run bridge
 # terminal 2 — vite on :3000 (or :3001 if 3000 is busy)
 npm run dev
 
-# open http://localhost:3000/cadam/
+# open http://localhost:3000/bismuth/
 ```
 
 That gets the UI running. **Prompts will hang forever until a Claude Code session is watching the inbox** — there's no fallback model. To wire that up:

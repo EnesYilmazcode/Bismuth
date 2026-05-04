@@ -5,8 +5,8 @@ import puppeteer from 'puppeteer-core';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 
-const PAGE_URL = 'http://localhost:3001/cadam/';
-const HISTORY_URL = 'http://localhost:3001/cadam/history';
+const PAGE_URL = 'http://localhost:3001/bismuth/';
+const HISTORY_URL = 'http://localhost:3001/bismuth/history';
 const PROMPT = 'a parametric phone stand';
 const REPLY = {
   text: "Here's a phone stand.",
@@ -101,7 +101,7 @@ await new Promise((r) => setTimeout(r, 4_000));
 // and confirm we can read it back.
 console.log('▶ write blob via storage');
 await page.evaluate(async () => {
-  const mod = await import('/cadam/src/lib/supabase.ts');
+  const mod = await import('/bismuth/src/lib/supabase.ts');
   const { supabase } = mod;
   const blob = new Blob(['hello-from-test'], { type: 'text/plain' });
   await supabase.storage.from('images').upload('test/persist.txt', blob);
@@ -123,7 +123,7 @@ await page.screenshot({ path: path.join(ROOT, 'e2e-history.png') });
 console.log('\n▶ reload + verify blob persists');
 await page.goto(PAGE_URL, { waitUntil: 'networkidle2' });
 const blobOk = await page.evaluate(async () => {
-  const mod = await import('/cadam/src/lib/supabase.ts');
+  const mod = await import('/bismuth/src/lib/supabase.ts');
   const { supabase } = mod;
   const { data, error } = await supabase.storage
     .from('images')

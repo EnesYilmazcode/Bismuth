@@ -54,7 +54,7 @@ export function UpdatePasswordView() {
           <div className="mb-4 flex flex-col items-center justify-center gap-2">
             <img
               src={`${import.meta.env.BASE_URL}/adam-logo.svg`}
-              alt="Adam Logo"
+              alt="Bismuth Logo"
               className="mr-2 h-8 w-8"
             />
             <h1 className="text-2xl font-semibold text-white">

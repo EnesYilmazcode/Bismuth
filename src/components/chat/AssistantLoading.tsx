@@ -8,7 +8,7 @@ export function AssistantLoading() {
         <Avatar className="h-9 w-9 border border-adam-neutral-700 bg-adam-neutral-950 p-1.5">
           <AvatarImage
             src={`${import.meta.env.BASE_URL}/adam-logo.svg`}
-            alt="Adam"
+            alt="Bismuth"
           />
         </Avatar>
       </div>

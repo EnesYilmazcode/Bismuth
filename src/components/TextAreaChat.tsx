@@ -462,7 +462,7 @@ function TextAreaChat({
   onSubmit,
   onFocus,
   isLoading = false,
-  placeholder = 'What can Adam help you build today?',
+  placeholder = 'What can Bismuth help you build today?',
   type,
   stopGenerating,
   disabled = false,
@@ -1493,8 +1493,8 @@ function TextAreaChat({
           <Avatar className="h-8 w-8">
             <div className="h-full w-full p-1.5">
               <img
-                src={`${import.meta.env.BASE_URL}/Adam-Logo.png`}
-                alt="Adam Logo"
+                src={`${import.meta.env.BASE_URL}/adam-logo.svg`}
+                alt="Bismuth Logo"
                 className="h-full w-full object-contain"
               />
             </div>

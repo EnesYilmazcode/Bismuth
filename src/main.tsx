@@ -123,7 +123,7 @@ const router = sentryCreateBrowserRouter(
       ],
     },
   ],
-  { future: { v7_relativeSplatPath: true }, basename: '/cadam' },
+  { future: { v7_relativeSplatPath: true }, basename: '/bismuth' },
 );
 
 createRoot(document.getElementById('root')!).render(

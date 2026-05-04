@@ -48,10 +48,9 @@ import { MeshImagePreview } from '@/components/viewer/MeshImagePreview';
 import { TreeNode } from '@shared/Tree';
 
 const linkParametricMode = (text: string) =>
-  text.replace(
-    /(```[\s\S]*?```|`[^`\n]*`)|parametric mode/gi,
-    (match, codeSpan) => codeSpan ?? `[${match}](https://adam.new/cadam)`,
-  );
+  // Previously linked "parametric mode" to an upstream marketing URL; that
+  // URL is irrelevant to this fork, so just leave the phrase as plain text.
+  text;
 
 interface AssistantMessageProps {
   message: TreeNode<Message>;
@@ -174,7 +173,7 @@ export function AssistantMessage({
             <div style={{ padding: '0.6rem 0.5rem 0.5rem 0.55rem' }}>
               <AvatarImage
                 src={`${import.meta.env.BASE_URL}/adam-logo.svg`}
-                alt="Adam"
+                alt="Bismuth"
               />
             </div>
           </Avatar>
@@ -509,7 +508,7 @@ function ObjectButton({
   currentVersion: number;
 }) {
   const [isHovered, setIsHovered] = useState(false);
-  let title = 'Adam Object';
+  let title = 'Bismuth Object';
   if (message.content.artifact) {
     title = message.content.artifact.title;
   }
@@ -563,7 +562,7 @@ function FreeUserMessage() {
       <Link to="/subscription" className="text-adam-blue hover:underline">
         Upgrade
       </Link>{' '}
-      to a paid plan to experience all the features Adam has to offer.
+      to a paid plan to experience all the features Bismuth has to offer.
     </span>
   );
 }

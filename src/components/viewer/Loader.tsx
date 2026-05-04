@@ -80,7 +80,7 @@ const Loader = ({ message }: Props) => {
       clearInterval(interval);
       fadeTimeouts.current.forEach(clearTimeout);
       fadeTimeouts.current = [];
-      document.title = 'Adam';
+      document.title = 'Bismuth';
     };
   }, []);
 

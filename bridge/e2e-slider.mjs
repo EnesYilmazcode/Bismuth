@@ -6,7 +6,7 @@ import puppeteer from 'puppeteer-core';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 
-const PAGE_URL = 'http://localhost:3001/cadam/';
+const PAGE_URL = 'http://localhost:3001/bismuth/';
 const PROMPT = 'a coffee mug';
 const REPLY = {
   text: "Here's a coffee mug.",

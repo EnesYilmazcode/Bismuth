@@ -138,10 +138,10 @@ export default function SettingsView() {
 
   const tierLabel =
     level === 'free'
-      ? 'Adam Free'
+      ? 'Bismuth Free'
       : level === 'standard'
-        ? 'Adam Standard'
-        : 'Adam Pro';
+        ? 'Bismuth Standard'
+        : 'Bismuth Pro';
 
   const tierAccent =
     level === 'free'
@@ -268,7 +268,7 @@ export default function SettingsView() {
               <div className="min-w-0 flex-1">
                 <div className="text-sm text-adam-neutral-50">Responses</div>
                 <div className="mt-0.5 text-xs leading-relaxed text-adam-neutral-200">
-                  Get notified when Adam finishes a long-running request.
+                  Get notified when Bismuth finishes a long-running request.
                 </div>
               </div>
               <Switch

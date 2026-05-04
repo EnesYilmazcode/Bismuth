@@ -239,7 +239,7 @@ export function PromptView() {
                       return;
                     }
                   }}
-                  placeholder="Start building with Adam..."
+                  placeholder="Start building with Bismuth..."
                   type={type}
                   disabled={limitReached}
                   model={model}

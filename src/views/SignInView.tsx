@@ -267,7 +267,7 @@ export function SignInView() {
             <div>
               <img
                 src={`${import.meta.env.BASE_URL}/adam-logo-full.svg`}
-                alt="Adam Logo"
+                alt="Bismuth Logo"
                 className="w-32"
               />
             </div>
