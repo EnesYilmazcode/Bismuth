@@ -4,6 +4,25 @@ All notable changes to Bismuth are recorded here. Format roughly follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and dates use
 ISO-8601 (UTC).
 
+## [Unreleased]
+
+### Added
+- **Benchmark mode** — a new `/benchmark` route that runs one prompt against
+  several AI models in parallel via OpenRouter and renders each result in its
+  own auto-rotating 3D viewer pane. Picks 2 models by default; up to 6 fit on
+  one screen. Click any pane to fullscreen it; Esc closes. Stop button
+  cancels an in-flight run.
+  - Bridge: new `/functions/v1/benchmark-models` endpoint exposes the curated
+    catalog (Claude, GPT, Gemini, DeepSeek, Qwen, Llama, Mistral, Grok, …).
+  - Bridge: new `/functions/v1/benchmark` endpoint streams ND-JSON events
+    (`start` / `delta` / `done` / `error`) for each model in parallel.
+  - Bridge: lightweight `.env.local` loader (no dotenv dep).
+  - Frontend: model picker grouped by vendor with localStorage persistence;
+    no-API-key onboarding card with the exact `OPENROUTER_API_KEY=…` line to
+    paste; tail-peek of the streaming SCAD on each pane while the model is
+    writing; per-pane status pill for idle / streaming / compiling / done /
+    error.
+
 ## [0.2.0] — 2026-05-05
 
 ### Added
