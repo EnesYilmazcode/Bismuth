@@ -74,6 +74,21 @@ export function OpenSCADPreview({
   } = useOpenSCAD();
   const [geometry, setGeometry] = useState<BufferGeometry | null>(null);
   const [coloredGroup, setColoredGroup] = useState<Group | null>(null);
+  // Track wall-clock compile duration so the user can see how heavy a model
+  // is. Includes WASM compile + STL/OFF parse — stops on first geometry frame.
+  const compileStartRef = useRef<number | null>(null);
+  const [lastCompileMs, setLastCompileMs] = useState<number | null>(null);
+  useEffect(() => {
+    if (isCompiling) {
+      compileStartRef.current = performance.now();
+      setLastCompileMs(null);
+    } else if (compileStartRef.current !== null) {
+      setLastCompileMs(
+        Math.round(performance.now() - compileStartRef.current),
+      );
+      compileStartRef.current = null;
+    }
+  }, [isCompiling]);
   // Use context directly to avoid throwing if provider is not mounted (e.g. VisualCard)
   const meshFilesCtx = useContext(MeshFilesContext);
   // Track which files we've written to avoid re-writing unchanged blobs
@@ -357,9 +372,22 @@ export function OpenSCADPreview({
             </div>
           </div>
         )}
+        {!isCompiling && lastCompileMs !== null && (geometry || coloredGroup) && (
+          <div
+            className="pointer-events-none absolute bottom-2 left-2 rounded-md bg-adam-neutral-950/70 px-2 py-1 font-mono text-[10px] tracking-tight text-adam-text-primary/60 backdrop-blur-sm"
+            title="Wall-clock time of the last OpenSCAD compile"
+          >
+            compiled in {formatCompileMs(lastCompileMs)}
+          </div>
+        )}
       </div>
     </div>
   );
+}
+
+function formatCompileMs(ms: number): string {
+  if (ms < 1000) return `${ms} ms`;
+  return `${(ms / 1000).toFixed(ms < 10000 ? 2 : 1)} s`;
 }
 
 // Alias for backwards compatibility (ViewerSection imports OpenSCADViewer)
