@@ -396,26 +396,30 @@ export function HistoryView() {
                 )}
               </div>
             ) : viewMode === 'visual' ? (
-              // Visual Grid View
+              // Visual Grid View — pinned cards float to the front of the grid.
               <div className="grid gap-6 py-4 pb-48 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {filteredConversations.map((conversation) => (
-                  <VisualCard
-                    key={conversation.id}
-                    conversation={conversation}
-                    onDelete={(id) => deleteConversation.mutate(id)}
-                    onRename={(_id, title) => {
-                      setEditingConversation(conversation);
-                      setNewTitle(title);
-                      setOpen(true);
-                    }}
-                    onTogglePrivacy={(id, privacy) =>
-                      togglePrivacy.mutate({
-                        conversationId: id,
-                        newPrivacy: privacy,
-                      })
-                    }
-                  />
-                ))}
+                {[...pinnedConversations, ...unpinnedConversations].map(
+                  (conversation) => (
+                    <VisualCard
+                      key={conversation.id}
+                      conversation={conversation}
+                      onDelete={(id) => deleteConversation.mutate(id)}
+                      onRename={(_id, title) => {
+                        setEditingConversation(conversation);
+                        setNewTitle(title);
+                        setOpen(true);
+                      }}
+                      onTogglePrivacy={(id, privacy) =>
+                        togglePrivacy.mutate({
+                          conversationId: id,
+                          newPrivacy: privacy,
+                        })
+                      }
+                      isPinned={isPinned(conversation.id)}
+                      onTogglePin={togglePin}
+                    />
+                  ),
+                )}
               </div>
             ) : (
               // List View (Original)

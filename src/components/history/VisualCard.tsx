@@ -9,6 +9,9 @@ import {
   Box,
   Loader2,
   LockKeyhole,
+  Pin,
+  PinOff,
+  Star,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -51,6 +54,8 @@ interface VisualCardProps {
     conversationId: string,
     newPrivacy: 'public' | 'private',
   ) => void;
+  isPinned?: boolean;
+  onTogglePin?: (conversationId: string) => void;
 }
 
 function ThreePreview({ geometry }: { geometry: BufferGeometry }) {
@@ -99,6 +104,8 @@ export function VisualCard({
   onDelete,
   onRename,
   onTogglePrivacy,
+  isPinned = false,
+  onTogglePin,
 }: VisualCardProps) {
   const [artifactCode, setArtifactCode] = useState<string | null>(null);
   const [geometry, setGeometry] = useState<BufferGeometry | null>(null);
@@ -239,6 +246,9 @@ export function VisualCard({
             <h3 className="line-clamp-2 text-base font-medium text-adam-neutral-50">
               {conversation.title}
             </h3>
+            {isPinned && (
+              <Star className="h-3.5 w-3.5 shrink-0 fill-adam-blue text-adam-blue" />
+            )}
             {conversation.privacy === 'public' ? (
               <GoodEarth className="h-3.5 w-3.5 shrink-0 text-adam-neutral-400" />
             ) : (
@@ -283,6 +293,27 @@ export function VisualCard({
                 <Pencil className="mr-2 h-4 w-4" />
                 Rename
               </DropdownMenuItem>
+              {onTogglePin && (
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onTogglePin(conversation.id);
+                  }}
+                  className="text-adam-neutral-50 hover:cursor-pointer hover:bg-adam-neutral-950 focus:bg-adam-neutral-950"
+                >
+                  {isPinned ? (
+                    <>
+                      <PinOff className="mr-2 h-4 w-4" />
+                      Unpin
+                    </>
+                  ) : (
+                    <>
+                      <Pin className="mr-2 h-4 w-4" />
+                      Pin to top
+                    </>
+                  )}
+                </DropdownMenuItem>
+              )}
               {conversation.privacy === 'private' ? (
                 <DropdownMenuItem
                   onClick={(e) => {
