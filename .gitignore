@@ -50,3 +50,6 @@ Thumbs.db
 
 # misc
 *.local
+
+# local planning notes (not for the public repo)
+.bismuth-notes/
