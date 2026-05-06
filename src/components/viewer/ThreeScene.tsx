@@ -1,3 +1,4 @@
+import { Camera as CameraIcon } from 'lucide-react';
 import { Canvas, useThree } from '@react-three/fiber';
 import {
   OrbitControls,
@@ -10,7 +11,7 @@ import {
   PerspectiveCamera,
 } from '@react-three/drei';
 import * as THREE from 'three';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { OrthographicPerspectiveToggle } from '@/components/viewer/OrthographicPerspectiveToggle';
 import { cn } from '@/lib/utils';
 
@@ -84,6 +85,23 @@ export function ThreeScene({
   // Store the initial isMobile value to prevent position changes during resize
   const [initialIsMobile] = useState(isMobile);
 
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleSnapshot = () => {
+    const canvas =
+      canvasContainerRef.current?.querySelector('canvas') ?? null;
+    if (!canvas) return;
+    // preserveDrawingBuffer keeps the framebuffer readable on the next paint;
+    // without it, toDataURL can return a blank image right after a render.
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bismuth-${Date.now()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
   // The colored group's meshes sit at their raw OpenSCAD coordinates.
   // Offset so the combined bounds are centered at origin, mirroring the
   // STL path's geom.center() behavior.
@@ -95,8 +113,11 @@ export function ThreeScene({
   }, [coloredGroup]);
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
-      <Canvas className="block h-full w-full">
+    <div ref={canvasContainerRef} className="relative h-full w-full overflow-hidden">
+      <Canvas
+        className="block h-full w-full"
+        gl={{ preserveDrawingBuffer: true }}
+      >
         <color attach="background" args={[effectiveBg]} />
         {isOrthographic ? (
           <OrthographicCamera
@@ -227,6 +248,15 @@ export function ThreeScene({
           className="rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-adam-neutral-300 transition-colors hover:bg-adam-neutral-800 hover:text-adam-text-primary"
         >
           {bgMode}
+        </button>
+        <button
+          type="button"
+          onClick={handleSnapshot}
+          aria-label="Download viewer as PNG"
+          title="Download as PNG"
+          className="flex items-center rounded px-1 py-0.5 text-adam-neutral-300 transition-colors hover:bg-adam-neutral-800 hover:text-adam-text-primary"
+        >
+          <CameraIcon size={12} />
         </button>
       </div>
     </div>
