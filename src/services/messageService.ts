@@ -11,6 +11,25 @@ import {
 } from '@tanstack/react-query';
 import * as Sentry from '@sentry/react';
 
+// Translate a chat-fetch failure into something the user can act on. The
+// common failure mode for this fork is "you forgot `npm run bridge`" — we
+// try to recognise that explicitly so the message names the fix.
+function describeChatError(error: unknown): string {
+  const bridgeUrl =
+    import.meta.env.VITE_SUPABASE_URL || 'http://127.0.0.1:8765';
+  // fetch throws TypeError on a network failure (DNS, connection refused).
+  if (error instanceof TypeError) {
+    return `Bismuth couldn't reach the local bridge at ${bridgeUrl}. Run \`npm run bridge\` in another terminal, then retry this prompt.`;
+  }
+  if (error instanceof Error && /Failed to fetch|NetworkError/i.test(error.message)) {
+    return `Bismuth couldn't reach the local bridge at ${bridgeUrl}. Run \`npm run bridge\` in another terminal, then retry this prompt.`;
+  }
+  if (error instanceof Error && /reply timeout/i.test(error.message)) {
+    return 'The bridge accepted your prompt but no Claude Code session replied in time. Make sure your Claude Code session is watching `bridge/inbox/` and writing to `bridge/outbox/`.';
+  }
+  return 'An error occurred while processing your request.';
+}
+
 function messageSentConversationUpdate(
   newMessage: Message,
   conversationId: string,
@@ -352,7 +371,7 @@ export function useCreativeChatMutation({
         await insertMessageAsync({
           role: 'assistant',
           content: {
-            text: 'An error occurred while processing your request.',
+            text: describeChatError(error),
           },
           parent_message_id: messageId,
           conversation_id: conversationId,
@@ -575,7 +594,7 @@ export function useParametricChatMutation({
         await insertMessageAsync({
           role: 'assistant',
           content: {
-            text: 'An error occurred while processing your request.',
+            text: describeChatError(error),
           },
           parent_message_id: messageId,
           conversation_id: conversationId,
