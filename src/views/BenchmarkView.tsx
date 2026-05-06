@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ExternalLink, KeyRound, Loader2, Send } from 'lucide-react';
+import { ExternalLink, KeyRound, Loader2, Send, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useBenchmarkConfig } from '@/hooks/useBenchmarkConfig';
@@ -39,9 +39,24 @@ export function BenchmarkView() {
   const [prompt, setPrompt] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [paneStates, setPaneStates] = useState<Record<string, PaneState>>({});
+  const [fullscreenId, setFullscreenId] = useState<string | null>(null);
   const config = useBenchmarkConfig();
   const { selected, setSelected } = useBenchmarkSelection(config.models);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Esc closes the fullscreen overlay. The shortcuts dialog also listens at
+  // window-level, but it bails out when typing in inputs so the two coexist.
+  useEffect(() => {
+    if (!fullscreenId) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setFullscreenId(null);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [fullscreenId]);
 
   // Reset stale pane state when a model is added or removed mid-run so the
   // grid never shows results for a model that's no longer in the lineup.
@@ -193,12 +208,49 @@ export function BenchmarkView() {
                   streaming={pane.streaming}
                   durationMs={pane.durationMs}
                   error={pane.error}
+                  onFullscreen={() => setFullscreenId(id)}
                 />
               );
             })}
           </BenchmarkGrid>
         )}
       </div>
+
+      {fullscreenId &&
+        (() => {
+          const model = config.models.find((m) => m.id === fullscreenId);
+          const pane = paneStates[fullscreenId] ?? INITIAL_PANE;
+          if (!model) return null;
+          return (
+            <div className="fixed inset-0 z-40 flex flex-col bg-adam-background-1/95 p-6 backdrop-blur-sm">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-sm font-medium text-adam-text-primary">
+                  {model.name}{' '}
+                  <span className="text-adam-neutral-500">· {model.vendor}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setFullscreenId(null)}
+                  aria-label="Close fullscreen"
+                  className="rounded-md border border-adam-neutral-700 bg-adam-bg-secondary-dark p-2 text-adam-text-primary hover:bg-adam-neutral-800"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="min-h-0 flex-1">
+                <BenchmarkPane
+                  model={model}
+                  status={pane.status}
+                  code={pane.code}
+                  streaming={pane.streaming}
+                  durationMs={pane.durationMs}
+                  error={pane.error}
+                />
+              </div>
+              <p className="mt-2 text-[11px] text-adam-neutral-500">Esc to close</p>
+            </div>
+          );
+        })()}
 
       <div className="border-t border-adam-neutral-800/60 bg-adam-bg-secondary-dark/40 px-6 py-4 md:px-20">
         <div className="mx-auto flex w-full max-w-6xl items-end gap-3">
