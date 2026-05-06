@@ -13,6 +13,8 @@ import { useOpenSCAD } from '@/hooks/useOpenSCAD';
 interface BenchmarkViewerProps {
   code: string;
   color?: string;
+  /** Rotations per minute around the Y axis. 0 disables auto-rotation. */
+  rotationRpm?: number;
 }
 
 // Minimal 3D viewer for a single benchmark pane. Lighter than the parametric
@@ -22,7 +24,13 @@ interface BenchmarkViewerProps {
 export function BenchmarkViewer({
   code,
   color = '#9CA3AF',
+  rotationRpm = 4,
 }: BenchmarkViewerProps) {
+  // Drei's OrbitControls expresses speed in "amount per frame at 60fps".
+  // 2π × rpm / 60s × (1/60fps) gives the per-frame radians, which the
+  // control treats as the rotation speed parameter directly when scaled by
+  // their internal constant of 60. In practice: speed ≈ rpm × 0.6.
+  const autoRotateSpeed = rotationRpm * 0.6;
   const { compileScad, isCompiling, output, isError } = useOpenSCAD();
   const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
   const lastGeomRef = useRef<THREE.BufferGeometry | null>(null);
@@ -71,6 +79,10 @@ export function BenchmarkViewer({
     <div className="absolute inset-0">
       <Canvas
         className="block h-full w-full"
+        // frameloop=always so the auto-rotation animates without us needing
+        // to drive invalidate() ourselves. Per-pane CPU cost is small at the
+        // pane sizes the grid produces.
+        frameloop={rotationRpm > 0 ? 'always' : 'demand'}
         gl={{ preserveDrawingBuffer: true }}
       >
         <color attach="background" args={['#3B3B3B']} />
@@ -103,7 +115,13 @@ export function BenchmarkViewer({
             </mesh>
           )}
         </Stage>
-        <OrbitControls makeDefault enableDamping dampingFactor={0.05} />
+        <OrbitControls
+          makeDefault
+          enableDamping
+          dampingFactor={0.05}
+          autoRotate={rotationRpm > 0}
+          autoRotateSpeed={autoRotateSpeed}
+        />
       </Canvas>
       {isCompiling && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-adam-neutral-700/30 backdrop-blur-sm">
