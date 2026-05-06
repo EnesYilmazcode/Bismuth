@@ -5,6 +5,9 @@ import {
   Trash2,
   LockKeyhole,
   Pencil,
+  Pin,
+  PinOff,
+  Star,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -44,6 +47,8 @@ interface ConversationCardProps {
     newPrivacy: 'public' | 'private',
   ) => void;
   isEditing: boolean;
+  isPinned?: boolean;
+  onTogglePin?: (conversationId: string) => void;
 }
 
 export function ConversationCard({
@@ -52,6 +57,8 @@ export function ConversationCard({
   onRename,
   onTogglePrivacy,
   isEditing,
+  isPinned = false,
+  onTogglePin,
 }: ConversationCardProps) {
   return (
     <div className="group relative">
@@ -70,6 +77,16 @@ export function ConversationCard({
               <h3 className="line-clamp-1 text-wrap break-all text-base font-medium text-adam-neutral-50">
                 {conversation.title}
               </h3>
+              {isPinned && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Star className="h-4 w-4 fill-adam-blue text-adam-blue" />
+                    </TooltipTrigger>
+                    <TooltipContent>Pinned</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
               {conversation.privacy === 'public' && (
                 <TooltipProvider>
                   <Tooltip>
@@ -171,6 +188,27 @@ export function ConversationCard({
                   <Pencil className="mr-2 h-4 w-4" />
                   Rename
                 </DropdownMenuItem>
+                {onTogglePin && (
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onTogglePin(conversation.id);
+                    }}
+                    className="text-adam-neutral-50 hover:cursor-pointer hover:bg-adam-neutral-950 hover:text-adam-neutral-50 focus:bg-adam-neutral-950 focus:text-adam-neutral-50"
+                  >
+                    {isPinned ? (
+                      <>
+                        <PinOff className="mr-2 h-4 w-4" />
+                        Unpin
+                      </>
+                    ) : (
+                      <>
+                        <Pin className="mr-2 h-4 w-4" />
+                        Pin to top
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
             <AlertDialogContent className="border-[2px] border-adam-neutral-700 bg-adam-background-1">

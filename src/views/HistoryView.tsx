@@ -16,6 +16,7 @@ import { HistoryConversation } from '../types/misc.ts';
 import { ConversationCard } from '@/components/history/ConversationCard';
 import { VisualCard } from '@/components/history/VisualCard';
 import { RenameDialogDrawer } from '@/components/history/RenameDialogDrawer';
+import { usePinnedConversations } from '@/hooks/usePinnedConversations';
 
 export function HistoryView() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,6 +29,7 @@ export function HistoryView() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isPinned, togglePin } = usePinnedConversations();
 
   const handleOpenChange = (open: boolean) => {
     setOpen(open);
@@ -270,10 +272,19 @@ export function HistoryView() {
       );
     }) ?? [];
 
+  // Hold pinned conversations out of the date groups; they get their own
+  // section above and stay visible regardless of when they were last touched.
+  const pinnedConversations = filteredConversations.filter((conv) =>
+    isPinned(conv.id),
+  );
+  const unpinnedConversations = filteredConversations.filter(
+    (conv) => !isPinned(conv.id),
+  );
+
   const groupConversationsByDate = () => {
     const groups: { [key: string]: HistoryConversation[] } = {};
 
-    filteredConversations.forEach((conv: HistoryConversation) => {
+    unpinnedConversations.forEach((conv: HistoryConversation) => {
       const localDate = new Date(
         conv.updated_at || conv.created_at,
       ).toLocaleDateString('en-CA');
@@ -409,6 +420,36 @@ export function HistoryView() {
             ) : (
               // List View (Original)
               <div className="space-y-8 py-4 pb-48">
+                {pinnedConversations.length > 0 && (
+                  <div className="space-y-2">
+                    <h2 className="bg-adam-background-1 px-3 py-2 text-sm font-medium text-adam-neutral-100">
+                      Pinned
+                    </h2>
+                    <div className="space-y-2">
+                      {pinnedConversations.map((conversation) => (
+                        <ConversationCard
+                          key={conversation.id}
+                          conversation={conversation}
+                          onDelete={(id) => deleteConversation.mutate(id)}
+                          onRename={(_id, title) => {
+                            setEditingConversation(conversation);
+                            setNewTitle(title);
+                            setOpen(true);
+                          }}
+                          onTogglePrivacy={(id, privacy) =>
+                            togglePrivacy.mutate({
+                              conversationId: id,
+                              newPrivacy: privacy,
+                            })
+                          }
+                          isEditing={!!editingConversation}
+                          isPinned={true}
+                          onTogglePin={togglePin}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {Object.entries(conversationGroups).map(([date, convs]) => {
                   let dateString;
                   try {
@@ -446,6 +487,8 @@ export function HistoryView() {
                               })
                             }
                             isEditing={!!editingConversation}
+                            isPinned={false}
+                            onTogglePin={togglePin}
                           />
                         ))}
                       </div>
