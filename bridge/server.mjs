@@ -11,6 +11,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import parseParameters from './parseParameter.mjs';
 import { loadEnv } from './env.mjs';
+import { hasOpenRouterKey, listBenchmarkModels } from './openrouter.mjs';
 
 loadEnv();
 
@@ -300,6 +301,13 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (url.pathname === '/health') return send(res, 200, { ok: true });
+
+    if (url.pathname === '/functions/v1/benchmark-models') {
+      return send(res, 200, {
+        configured: hasOpenRouterKey(),
+        models: listBenchmarkModels(),
+      });
+    }
 
     if (url.pathname === '/stats') {
       const [inboxFiles, outboxFiles, processedFiles] = await Promise.all([
