@@ -4,6 +4,35 @@ All notable changes to Bismuth are recorded here. Format roughly follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and dates use
 ISO-8601 (UTC).
 
+## [Unreleased]
+
+### Added
+- Copy-to-clipboard button on the assistant streaming code block.
+- "Modified from default" indicator dot next to changed parameters; clicking
+  the dot resets that single parameter without disturbing the rest.
+- Compile-duration indicator in the lower-left of the 3D viewer (shows ms / s
+  for the most recent OpenSCAD WASM run).
+- 3D viewer toolbar: Iso/Front/Top/Right camera presets, toggleable grid +
+  axes overlay, dark/studio/light background cycle, snapshot-to-PNG button.
+- Conversation pinning: list-view "Pinned" section, visual-grid float-to-front,
+  star indicator, persisted in localStorage.
+- Conversation duplication that clones the source row + all its messages with
+  fresh IDs and a remapped message tree.
+- `Cmd/Ctrl+K` focuses the history search box; `?` opens a global keyboard
+  shortcuts dialog.
+- Bridge-status pill in the sidebar that polls `/health` every 5 s.
+- Bridge `GET /stats` endpoint reporting prompt counts, queue depth, and the
+  last prompt seen; surfaced in a `?debug=1` overlay panel.
+- Parameter system: save/load named presets backed by localStorage, "Copy
+  values as JSON" action, and rendering of `/* [Group Name] */` SCAD comment
+  groups as nested collapsibles.
+- `npm run e2e` aggregate script that chains the three bridge smoke tests.
+
+### Changed
+- Chat error messages: failures from a missing/unreachable bridge now name
+  the fix (`npm run bridge`) and tell the user where it should be running,
+  rather than the generic "an error occurred" string.
+
 ## [0.1.0] — 2026-05-04
 
 First public release. Forked from [CADAM](https://github.com/Adam-CAD/CADAM)
