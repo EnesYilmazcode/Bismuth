@@ -19,13 +19,35 @@ function isModifiedFromDefault(param: Parameter): boolean {
   return def !== val;
 }
 
-function ModifiedDot({ visible }: { visible: boolean }) {
+function ModifiedDot({
+  visible,
+  onReset,
+}: {
+  visible: boolean;
+  onReset?: () => void;
+}) {
   if (!visible) return null;
+  if (!onReset) {
+    return (
+      <span
+        aria-label="Modified from default"
+        title="Modified from default"
+        className="h-1.5 w-1.5 shrink-0 rounded-full bg-adam-blue/80"
+      />
+    );
+  }
   return (
-    <span
-      aria-label="Modified from default"
-      title="Modified from default"
-      className="h-1.5 w-1.5 shrink-0 rounded-full bg-adam-blue/80"
+    <button
+      type="button"
+      onClick={(e) => {
+        // Don't toggle the parent <Label>'s associated input on reset click.
+        e.preventDefault();
+        e.stopPropagation();
+        onReset();
+      }}
+      aria-label="Reset to default"
+      title="Reset to default"
+      className="group/dot relative h-1.5 w-1.5 shrink-0 rounded-full bg-adam-blue/80 transition-transform hover:scale-150 hover:bg-adam-blue"
     />
   );
 }
@@ -44,6 +66,11 @@ export function ParameterInput({
   }, [param]);
 
   const modified = isModifiedFromDefault(paramState);
+
+  const handleResetToDefault = () => {
+    setParamState({ ...paramState, value: paramState.defaultValue });
+    handleCommit(paramState, paramState.defaultValue);
+  };
 
   const onEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -67,7 +94,7 @@ export function ParameterInput({
           className="flex items-center gap-1.5 overflow-hidden text-xs font-normal text-adam-neutral-300"
           htmlFor={paramState.name}
         >
-          <ModifiedDot visible={modified} />
+          <ModifiedDot visible={modified} onReset={handleResetToDefault} />
           <span className="overflow-hidden text-ellipsis">
             {paramState.displayName}
           </span>
@@ -109,7 +136,7 @@ export function ParameterInput({
           className="flex items-center gap-1.5 overflow-hidden text-xs font-normal text-adam-neutral-300"
           htmlFor={paramState.name}
         >
-          <ModifiedDot visible={modified} />
+          <ModifiedDot visible={modified} onReset={handleResetToDefault} />
           <span className="overflow-hidden text-ellipsis">
             {paramState.displayName}
           </span>
@@ -141,7 +168,7 @@ export function ParameterInput({
             htmlFor={paramState.name}
             title={paramState.displayName}
           >
-            <ModifiedDot visible={modified} />
+            <ModifiedDot visible={modified} onReset={handleResetToDefault} />
             <span className="overflow-hidden text-ellipsis">{labelText}</span>
           </Label>
           <ColorPicker
@@ -157,7 +184,7 @@ export function ParameterInput({
           className="flex items-center gap-1.5 overflow-hidden text-xs font-normal text-adam-neutral-300"
           htmlFor={paramState.name}
         >
-          <ModifiedDot visible={modified} />
+          <ModifiedDot visible={modified} onReset={handleResetToDefault} />
           <span className="overflow-hidden text-ellipsis">
             {paramState.displayName}
           </span>
@@ -184,7 +211,7 @@ export function ParameterInput({
             className="flex items-center gap-1.5 overflow-hidden pt-2 text-xs font-normal text-adam-neutral-300"
             htmlFor={paramState.name}
           >
-            <ModifiedDot visible={modified} />
+            <ModifiedDot visible={modified} onReset={handleResetToDefault} />
             <span className="overflow-hidden text-ellipsis">
               {paramState.displayName}
             </span>
@@ -231,7 +258,7 @@ export function ParameterInput({
             className="flex items-center gap-1.5 overflow-hidden pt-2 text-xs font-normal text-adam-neutral-300"
             htmlFor={paramState.name}
           >
-            <ModifiedDot visible={modified} />
+            <ModifiedDot visible={modified} onReset={handleResetToDefault} />
             <span className="overflow-hidden text-ellipsis">
               {paramState.displayName}
             </span>
@@ -321,7 +348,7 @@ export function ParameterInput({
             className="flex items-center gap-1.5 overflow-hidden pt-2 text-xs font-normal text-adam-neutral-300"
             htmlFor={paramState.name}
           >
-            <ModifiedDot visible={modified} />
+            <ModifiedDot visible={modified} onReset={handleResetToDefault} />
             <span className="overflow-hidden text-ellipsis">
               {paramState.displayName}
             </span>
