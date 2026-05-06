@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MessageSquare, Plus, LayoutGrid, List } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -30,6 +30,22 @@ export function HistoryView() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { isPinned, togglePin } = usePinnedConversations();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Cmd/Ctrl+K is the long-standing "focus search" shortcut across docs UIs;
+  // mirroring it here keeps the muscle memory free.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const isModK =
+        (e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K');
+      if (!isModK) return;
+      e.preventDefault();
+      searchInputRef.current?.focus();
+      searchInputRef.current?.select();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   const handleOpenChange = (open: boolean) => {
     setOpen(open);
@@ -349,7 +365,8 @@ export function HistoryView() {
 
           <div className="relative mt-4">
             <Input
-              placeholder="Search generations..."
+              ref={searchInputRef}
+              placeholder="Search generations…  (⌘K)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="border-0 bg-adam-background-2 pl-6 text-base shadow-[inset_0_0_10px_0_rgba(0,0,0,0.32),0_0_0_2px_rgba(0,0,0,0)] ring-0 transition-shadow duration-300 ease-in-out hover:shadow-[inset_0_0_4px_0_rgba(0,0,0,0.16),0_0_0_2px_rgba(60,60,60,1)] focus:shadow-[inset_0_0_4px_0_rgba(0,0,0,0.16),0_0_0_2px_#00A6FF] focus:outline-none sm:text-sm"
