@@ -1,4 +1,4 @@
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
 import {
   OrbitControls,
   GizmoHelper,
@@ -9,9 +9,44 @@ import {
   PerspectiveCamera,
 } from '@react-three/drei';
 import * as THREE from 'three';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { OrthographicPerspectiveToggle } from '@/components/viewer/OrthographicPerspectiveToggle';
 import { cn } from '@/lib/utils';
+
+type CameraPreset = 'iso' | 'front' | 'top' | 'right';
+const CAMERA_PRESET_POSITIONS: Record<CameraPreset, [number, number, number]> = {
+  iso: [-100, 100, 100],
+  front: [0, 0, 150],
+  top: [0, 150, 0],
+  right: [150, 0, 0],
+};
+
+function CameraPresetApplier({
+  preset,
+  onApplied,
+}: {
+  preset: CameraPreset | null;
+  onApplied: () => void;
+}) {
+  const { camera, controls } = useThree();
+  useEffect(() => {
+    if (!preset) return;
+    const [x, y, z] = CAMERA_PRESET_POSITIONS[preset];
+    camera.position.set(x, y, z);
+    camera.lookAt(0, 0, 0);
+    // Drei's OrbitControls registers itself as the default `controls` when
+    // makeDefault is set, exposing `target` + `update()` here.
+    const c = controls as unknown as
+      | { target: THREE.Vector3; update: () => void }
+      | null;
+    if (c?.target && typeof c.update === 'function') {
+      c.target.set(0, 0, 0);
+      c.update();
+    }
+    onApplied();
+  }, [preset, camera, controls, onApplied]);
+  return null;
+}
 
 interface ThreeSceneProps {
   geometry: THREE.BufferGeometry | null;
@@ -29,6 +64,7 @@ export function ThreeScene({
   coloredGroup,
 }: ThreeSceneProps) {
   const [isOrthographic, setIsOrthographic] = useState(true);
+  const [pendingPreset, setPendingPreset] = useState<CameraPreset | null>(null);
 
   // Store the initial isMobile value to prevent position changes during resize
   const [initialIsMobile] = useState(isMobile);
@@ -108,6 +144,10 @@ export function ThreeScene({
           infiniteGrid={true}
         /> */}
         <OrbitControls makeDefault enableDamping={true} dampingFactor={0.05} />
+        <CameraPresetApplier
+          preset={pendingPreset}
+          onApplied={() => setPendingPreset(null)}
+        />
         {!initialIsMobile && (
           <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
             <GizmoViewcube />
@@ -127,6 +167,21 @@ export function ThreeScene({
             onToggle={setIsOrthographic}
           />
         </div>
+      </div>
+
+      <div className="absolute right-2 top-2 flex items-center gap-1 rounded-md border border-adam-neutral-700/60 bg-adam-neutral-950/70 px-1 py-0.5 backdrop-blur-sm">
+        {(['iso', 'front', 'top', 'right'] as const).map((preset) => (
+          <button
+            key={preset}
+            type="button"
+            onClick={() => setPendingPreset(preset)}
+            aria-label={`${preset} view`}
+            title={`${preset.charAt(0).toUpperCase()}${preset.slice(1)} view`}
+            className="rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-adam-neutral-300 transition-colors hover:bg-adam-neutral-800 hover:text-adam-text-primary"
+          >
+            {preset}
+          </button>
+        ))}
       </div>
     </div>
   );
