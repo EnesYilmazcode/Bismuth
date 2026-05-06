@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { ExternalLink, KeyRound, Loader2, Send, X } from 'lucide-react';
+import {
+  ExternalLink,
+  KeyRound,
+  Loader2,
+  Send,
+  Square,
+  X,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useBenchmarkConfig } from '@/hooks/useBenchmarkConfig';
@@ -157,6 +164,20 @@ export function BenchmarkView() {
     }
   };
 
+  const handleAbort = () => {
+    abortRef.current?.abort();
+    setPaneStates((prev) => {
+      const next: Record<string, PaneState> = { ...prev };
+      for (const id of Object.keys(next)) {
+        if (next[id].status === 'streaming') {
+          next[id] = { ...next[id], status: 'error', error: 'Cancelled' };
+        }
+      }
+      return next;
+    });
+    setIsRunning(false);
+  };
+
   return (
     <div className="flex h-full min-w-0 flex-1 flex-col bg-adam-background-1">
       <header className="border-b border-adam-neutral-800/60 px-6 pb-4 pt-10 md:px-20 md:py-6">
@@ -267,18 +288,24 @@ export function BenchmarkView() {
             rows={2}
             className="flex-1 resize-none border border-adam-neutral-700 bg-adam-background-2 text-sm text-adam-text-primary"
           />
-          <Button
-            onClick={handleSubmit}
-            disabled={!canSubmit}
-            className="h-12 gap-2 rounded-lg bg-adam-blue px-4 text-adam-neutral-50 hover:bg-adam-blue/80"
-          >
-            {isRunning ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
+          {isRunning ? (
+            <Button
+              onClick={handleAbort}
+              className="h-12 gap-2 rounded-lg border border-adam-neutral-600 bg-adam-bg-secondary-dark px-4 text-adam-text-primary hover:bg-adam-neutral-800"
+            >
+              <Square className="h-3.5 w-3.5 fill-current" />
+              Stop
+            </Button>
+          ) : (
+            <Button
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+              className="h-12 gap-2 rounded-lg bg-adam-blue px-4 text-adam-neutral-50 hover:bg-adam-blue/80"
+            >
               <Send className="h-4 w-4" />
-            )}
-            Run
-          </Button>
+              Run
+            </Button>
+          )}
         </div>
         <p className="mx-auto mt-2 max-w-6xl text-[11px] text-adam-neutral-500">
           {!config.configured
