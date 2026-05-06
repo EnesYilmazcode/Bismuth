@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { PanelLeft } from 'lucide-react';
 
 import { Sidebar } from './Sidebar';
+import { DebugPanel } from './DebugPanel';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -77,6 +78,7 @@ export function Layout() {
           </div>
         </div>
       </div>
+      <DebugPanel />
     </div>
   );
 }
