@@ -93,7 +93,11 @@ export function BenchmarkView() {
           </Button>
         </div>
         <p className="mx-auto mt-2 max-w-6xl text-[11px] text-adam-neutral-500">
-          ⌘/Ctrl + Enter to submit.
+          {!config.configured
+            ? 'Add OPENROUTER_API_KEY to .env.local to enable Run.'
+            : selected.length === 0
+              ? 'Pick at least one model above before running.'
+              : `${selected.length} model${selected.length === 1 ? '' : 's'} ready · ⌘/Ctrl + Enter to submit.`}
         </p>
       </div>
     </div>
