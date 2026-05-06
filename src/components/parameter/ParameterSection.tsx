@@ -4,6 +4,8 @@ import {
   ChevronUp,
   ChevronDown,
   Loader2,
+  Bookmark,
+  Trash2,
 } from 'lucide-react';
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
@@ -39,6 +41,7 @@ import {
   DxfExporter,
 } from '@/utils/downloadUtils';
 import { useToast } from '@/hooks/use-toast';
+import { useParameterPresets } from '@/hooks/useParameterPresets';
 
 interface ParameterSectionProps {
   parameters: Parameter[];
@@ -57,8 +60,47 @@ export function ParameterSection({
 }: ParameterSectionProps) {
   const { currentMessage } = useCurrentMessage();
   const { toast } = useToast();
+  const { presets, savePreset, deletePreset } = useParameterPresets();
   const [selectedFormat, setSelectedFormat] = useState<DownloadFormat>('stl');
   const [isExporting, setIsExporting] = useState(false);
+
+  const handleSavePreset = () => {
+    const name = window.prompt('Name this preset:', '');
+    if (!name) return;
+    const values = Object.fromEntries(
+      parameters.map((p) => [p.name, p.value]),
+    );
+    savePreset(name, values);
+    toast({
+      title: 'Preset saved',
+      description: `"${name.trim()}" — ${parameters.length} parameter${parameters.length === 1 ? '' : 's'}.`,
+    });
+  };
+
+  const handleLoadPreset = (presetName: string) => {
+    const preset = presets.find((p) => p.name === presetName);
+    if (!preset) return;
+    let applied = 0;
+    const next = parameters.map((p) => {
+      if (Object.prototype.hasOwnProperty.call(preset.values, p.name)) {
+        applied += 1;
+        return {
+          ...p,
+          value: validateParameterValue(p, preset.values[p.name] as Parameter['value']),
+        };
+      }
+      return p;
+    });
+    onSubmit(currentMessage, next);
+    toast({
+      title: applied > 0 ? 'Preset applied' : 'No matching parameters',
+      description:
+        applied > 0
+          ? `"${preset.name}" — ${applied}/${parameters.length} parameters applied.`
+          : `None of "${preset.name}"'s parameter names match this model.`,
+      variant: applied > 0 ? 'default' : 'destructive',
+    });
+  };
 
   // Split params into the main list (non-color, shown by default) and a
   // collapsible Colors group below it. Keeps the dimensions the user
@@ -183,27 +225,84 @@ export function ParameterSection({
           </span>
         </div>
         <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                className="h-8 w-8 rounded-full p-0 text-adam-text-primary transition-colors [@media(hover:hover)]:hover:bg-adam-neutral-950 [@media(hover:hover)]:hover:text-adam-neutral-10"
-                disabled={parameters.length === 0}
-                onClick={() => {
-                  const newParameters = parameters.map((param) => ({
-                    ...param,
-                    value: param.defaultValue,
-                  }));
-                  onSubmit(currentMessage, newParameters);
-                }}
+          <div className="flex items-center gap-1">
+            <DropdownMenu>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="h-8 w-8 rounded-full p-0 text-adam-text-primary transition-colors [@media(hover:hover)]:hover:bg-adam-neutral-950 [@media(hover:hover)]:hover:text-adam-neutral-10"
+                      disabled={parameters.length === 0 && presets.length === 0}
+                    >
+                      <Bookmark className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Parameter presets</p>
+                </TooltipContent>
+              </Tooltip>
+              <DropdownMenuContent
+                align="end"
+                className="w-64 border border-adam-neutral-700 bg-adam-neutral-800 shadow-md"
               >
-                <RefreshCcw className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Reset all parameters</p>
-            </TooltipContent>
-          </Tooltip>
+                <DropdownMenuItem
+                  onClick={handleSavePreset}
+                  disabled={parameters.length === 0}
+                  className="cursor-pointer text-adam-text-primary"
+                >
+                  <Bookmark className="mr-2 h-4 w-4" />
+                  Save current values…
+                </DropdownMenuItem>
+                {presets.length === 0 ? (
+                  <div className="px-2 py-1.5 text-xs text-adam-neutral-400">
+                    No saved presets yet.
+                  </div>
+                ) : (
+                  presets.map((preset) => (
+                    <DropdownMenuItem
+                      key={preset.name}
+                      onClick={() => handleLoadPreset(preset.name)}
+                      className="group flex cursor-pointer items-center justify-between text-adam-text-primary"
+                    >
+                      <span className="truncate">{preset.name}</span>
+                      <Trash2
+                        role="button"
+                        aria-label={`Delete preset ${preset.name}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deletePreset(preset.name);
+                        }}
+                        className="ml-2 h-3.5 w-3.5 shrink-0 text-adam-neutral-500 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-400"
+                      />
+                    </DropdownMenuItem>
+                  ))
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="h-8 w-8 rounded-full p-0 text-adam-text-primary transition-colors [@media(hover:hover)]:hover:bg-adam-neutral-950 [@media(hover:hover)]:hover:text-adam-neutral-10"
+                  disabled={parameters.length === 0}
+                  onClick={() => {
+                    const newParameters = parameters.map((param) => ({
+                      ...param,
+                      value: param.defaultValue,
+                    }));
+                    onSubmit(currentMessage, newParameters);
+                  }}
+                >
+                  <RefreshCcw className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Reset all parameters</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </TooltipProvider>
       </div>
       <div className="flex h-[calc(100%-3.5rem)] flex-col justify-between overflow-hidden">
