@@ -4,6 +4,7 @@ import { PanelLeft } from 'lucide-react';
 
 import { Sidebar } from './Sidebar';
 import { DebugPanel } from './DebugPanel';
+import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -79,6 +80,7 @@ export function Layout() {
         </div>
       </div>
       <DebugPanel />
+      <KeyboardShortcutsDialog />
     </div>
   );
 }
