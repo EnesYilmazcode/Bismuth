@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ExternalLink, KeyRound, Loader2, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -6,7 +6,29 @@ import { useBenchmarkConfig } from '@/hooks/useBenchmarkConfig';
 import { useBenchmarkSelection } from '@/hooks/useBenchmarkSelection';
 import { BenchmarkModelPicker } from '@/components/benchmark/BenchmarkModelPicker';
 import { BenchmarkGrid } from '@/components/benchmark/BenchmarkGrid';
-import { BenchmarkPane } from '@/components/benchmark/BenchmarkPane';
+import {
+  BenchmarkPane,
+  type BenchmarkStatus,
+} from '@/components/benchmark/BenchmarkPane';
+import { runBenchmark } from '@/services/benchmarkService';
+
+interface PaneState {
+  status: BenchmarkStatus;
+  /** Raw streamed text — accumulates 'delta' events. */
+  streaming: string;
+  /** Bridge-stripped final code (post fence removal). Falls back to streaming. */
+  code: string;
+  durationMs: number | null;
+  error: string | null;
+}
+
+const INITIAL_PANE: PaneState = {
+  status: 'idle',
+  streaming: '',
+  code: '',
+  durationMs: null,
+  error: null,
+};
 
 // Benchmark mode — runs one prompt against several AI models in parallel
 // and renders each model's OpenSCAD result in its own auto-rotating viewer
@@ -16,8 +38,23 @@ import { BenchmarkPane } from '@/components/benchmark/BenchmarkPane';
 export function BenchmarkView() {
   const [prompt, setPrompt] = useState('');
   const [isRunning, setIsRunning] = useState(false);
+  const [paneStates, setPaneStates] = useState<Record<string, PaneState>>({});
   const config = useBenchmarkConfig();
   const { selected, setSelected } = useBenchmarkSelection(config.models);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // Reset stale pane state when a model is added or removed mid-run so the
+  // grid never shows results for a model that's no longer in the lineup.
+  useEffect(() => {
+    setPaneStates((prev) => {
+      const next: Record<string, PaneState> = {};
+      for (const id of selected) next[id] = prev[id] ?? INITIAL_PANE;
+      return next;
+    });
+  }, [selected]);
+
+  // Cancel any in-flight benchmark when the view unmounts.
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   const canSubmit =
     prompt.trim().length > 0 &&
@@ -25,12 +62,84 @@ export function BenchmarkView() {
     config.configured &&
     selected.length > 0;
 
-  const handleSubmit = () => {
+  const updatePane = (modelId: string, patch: Partial<PaneState>) =>
+    setPaneStates((prev) => ({
+      ...prev,
+      [modelId]: { ...(prev[modelId] ?? INITIAL_PANE), ...patch },
+    }));
+
+  const handleSubmit = async () => {
     if (!canSubmit) return;
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setIsRunning(true);
-    // Streaming wire-up lands in Phase E. For now the button is a no-op so
-    // the layout can be reviewed in isolation.
-    setTimeout(() => setIsRunning(false), 600);
+    setPaneStates((prev) => {
+      const next: Record<string, PaneState> = { ...prev };
+      for (const id of selected) {
+        next[id] = {
+          status: 'streaming',
+          streaming: '',
+          code: '',
+          durationMs: null,
+          error: null,
+        };
+      }
+      return next;
+    });
+
+    try {
+      for await (const event of runBenchmark({
+        prompt: prompt.trim(),
+        models: selected,
+        signal: controller.signal,
+      })) {
+        if (event.type === 'start') {
+          updatePane(event.model, { status: 'streaming' });
+        } else if (event.type === 'delta') {
+          setPaneStates((prev) => {
+            const cur = prev[event.model] ?? INITIAL_PANE;
+            return {
+              ...prev,
+              [event.model]: {
+                ...cur,
+                streaming: cur.streaming + event.text,
+              },
+            };
+          });
+        } else if (event.type === 'done') {
+          updatePane(event.model, {
+            status: 'done',
+            code: event.code,
+            durationMs: event.durationMs,
+          });
+        } else if (event.type === 'error') {
+          updatePane(event.model, {
+            status: 'error',
+            error: event.message,
+            durationMs: event.durationMs,
+          });
+        }
+      }
+    } catch (e) {
+      if (controller.signal.aborted) return;
+      // The fetch itself failed (network, 503 from bridge, etc). Mark every
+      // still-streaming pane as errored so the UI tells the user something.
+      const message = e instanceof Error ? e.message : String(e);
+      setPaneStates((prev) => {
+        const next: Record<string, PaneState> = { ...prev };
+        for (const id of selected) {
+          if (next[id]?.status === 'streaming') {
+            next[id] = { ...next[id], status: 'error', error: message };
+          }
+        }
+        return next;
+      });
+    } finally {
+      if (abortRef.current === controller) abortRef.current = null;
+      setIsRunning(false);
+    }
   };
 
   return (
@@ -74,13 +183,15 @@ export function BenchmarkView() {
             {selected.map((id) => {
               const model = config.models.find((m) => m.id === id);
               if (!model) return null;
+              const pane = paneStates[id] ?? INITIAL_PANE;
               return (
                 <BenchmarkPane
                   key={id}
                   model={model}
-                  status="idle"
-                  code=""
-                  durationMs={null}
+                  status={pane.status}
+                  code={pane.code}
+                  durationMs={pane.durationMs}
+                  error={pane.error}
                 />
               );
             })}
