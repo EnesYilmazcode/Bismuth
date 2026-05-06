@@ -21,7 +21,8 @@
     "lint": "eslint .",
     "typecheck": "tsc -b --noEmit",
     "format": "prettier --write .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "e2e": "node bridge/e2e.mjs && node bridge/e2e-slider.mjs && node bridge/e2e-history.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
