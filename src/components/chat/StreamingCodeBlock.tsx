@@ -1,3 +1,4 @@
+import { Check, Copy } from 'lucide-react';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 interface StreamingCodeBlockProps {
@@ -21,6 +22,18 @@ export function StreamingCodeBlock({
   const scrollRef = useRef<HTMLDivElement>(null);
   const stickToBottomRef = useRef(true);
   const [visibleCount, setVisibleCount] = useState(0);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    if (!code) return;
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // clipboard API can be blocked in some contexts; fail silently
+    }
+  };
 
   // Catch up to the incoming stream at a readable pace. Scale with backlog
   // so very long responses finish in ~1.5s rather than tens of seconds.
@@ -64,15 +77,29 @@ export function StreamingCodeBlock({
           <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-adam-blue/80" />
           <span className="truncate">{filename}</span>
         </div>
-        {showCaret && (
-          <div className="flex shrink-0 items-center gap-1.5 text-[10.5px] text-adam-neutral-500">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-adam-blue/70" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-adam-blue" />
-            </span>
-            streaming
-          </div>
-        )}
+        <div className="flex shrink-0 items-center gap-2">
+          {showCaret && (
+            <div className="flex items-center gap-1.5 text-[10.5px] text-adam-neutral-500">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-adam-blue/70" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-adam-blue" />
+              </span>
+              streaming
+            </div>
+          )}
+          {code.length > 0 && (
+            <button
+              type="button"
+              onClick={handleCopy}
+              aria-label={copied ? 'Copied' : 'Copy code'}
+              title={copied ? 'Copied' : 'Copy code'}
+              className="flex items-center gap-1 rounded-sm px-1 py-0.5 text-[10.5px] text-adam-neutral-400 transition-colors hover:bg-white/[0.04] hover:text-adam-text-primary"
+            >
+              {copied ? <Check size={11} /> : <Copy size={11} />}
+              <span>{copied ? 'copied' : 'copy'}</span>
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="relative">
