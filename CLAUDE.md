@@ -97,6 +97,11 @@ Names render directly as labels — `mug_radius` becomes "Mug Radius", `$fn` bec
 - Parametric mode end-to-end (text → OpenSCAD → 3D viewer with parameter sliders)
 - Conversation history / multi-turn chat (in-browser localStorage)
 - The export / file download pipeline (STL, SCAD, DXF) — runs entirely client-side
+- **Benchmark mode** at `/benchmark` — pits multiple AI models against the same
+  prompt in side-by-side auto-rotating viewers. Uses OpenRouter (the bridge
+  reads `OPENROUTER_API_KEY` from `.env.local`); each model's curated entry
+  lives in `bridge/openrouter.mjs` and the wire format is one `{model, type,
+  …}` ND-JSON event per line.
 
 **Doesn't:**
 - Creative mode (mesh generation via Replicate / image diffusion) — bridge stub returns 501

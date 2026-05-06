@@ -4,7 +4,7 @@ All notable changes to Bismuth are recorded here. Format roughly follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and dates use
 ISO-8601 (UTC).
 
-## [Unreleased]
+## [0.3.0] — 2026-05-06
 
 ### Added
 - **Benchmark mode** — a new `/benchmark` route that runs one prompt against

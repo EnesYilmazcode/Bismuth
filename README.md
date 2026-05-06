@@ -95,6 +95,9 @@ When the user drags a slider, the bridge re-parses without round-tripping throug
 - STL / SCAD / DXF export, all client-side
 - Conversation history persisted to `localStorage`
 - Uploaded images persisted across reloads via IndexedDB
+- Benchmark mode at `/benchmark` — runs one prompt against several AI models
+  in parallel via OpenRouter (set `OPENROUTER_API_KEY` in `.env.local`) and
+  renders each result in its own auto-rotating 3D pane.
 
 **Doesn't**
 - Creative / mesh-generation mode (the original CADAM Replicate path) — bridge stub returns 501

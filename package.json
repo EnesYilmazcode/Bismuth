@@ -1,7 +1,7 @@
 {
   "name": "bismuth",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Text-to-CAD that runs in your browser, with Claude Code as the model. Fork of CADAM with the SaaS backend replaced by a local bridge.",
   "type": "module",
   "homepage": "https://github.com/EnesYilmazcode/Bismuth#readme",
