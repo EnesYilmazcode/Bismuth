@@ -8,6 +8,7 @@ import {
   Pin,
   PinOff,
   Star,
+  Copy,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -49,6 +50,7 @@ interface ConversationCardProps {
   isEditing: boolean;
   isPinned?: boolean;
   onTogglePin?: (conversationId: string) => void;
+  onDuplicate?: (conversationId: string) => void;
 }
 
 export function ConversationCard({
@@ -59,6 +61,7 @@ export function ConversationCard({
   isEditing,
   isPinned = false,
   onTogglePin,
+  onDuplicate,
 }: ConversationCardProps) {
   return (
     <div className="group relative">
@@ -207,6 +210,18 @@ export function ConversationCard({
                         Pin to top
                       </>
                     )}
+                  </DropdownMenuItem>
+                )}
+                {onDuplicate && (
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDuplicate(conversation.id);
+                    }}
+                    className="text-adam-neutral-50 hover:cursor-pointer hover:bg-adam-neutral-950 hover:text-adam-neutral-50 focus:bg-adam-neutral-950 focus:text-adam-neutral-50"
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
+                    Duplicate
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>

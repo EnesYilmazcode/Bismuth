@@ -211,6 +211,95 @@ export function HistoryView() {
     },
   });
 
+  const duplicateConversation = useMutation({
+    mutationFn: async (conversationId: string) => {
+      const { data: source, error: convErr } = await supabase
+        .from('conversations')
+        .select('*')
+        .eq('id', conversationId)
+        .single();
+      if (convErr) throw convErr;
+
+      const { data: sourceMessages, error: msgErr } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true });
+      if (msgErr) throw msgErr;
+
+      // Map old message IDs to new ones so parent links still resolve in the
+      // copy. crypto.randomUUID is fine here — the mock store doesn't enforce
+      // the v4 layout, but real Postgres uuid columns would accept these too.
+      const idMap = new Map<string, string>();
+      const messages = (sourceMessages ?? []) as Array<{
+        id: string;
+        parent_message_id: string | null;
+        role: string;
+        content: unknown;
+        rating?: number;
+      }>;
+      for (const m of messages) idMap.set(m.id, crypto.randomUUID());
+
+      const sourceConv = source as {
+        title: string;
+        type: 'parametric' | 'creative';
+        privacy: 'public' | 'private';
+        settings: unknown;
+        current_message_leaf_id: string | null;
+      };
+
+      const newConvId = crypto.randomUUID();
+      const { error: insertConvErr } = await supabase
+        .from('conversations')
+        .insert({
+          id: newConvId,
+          user_id: user?.id ?? '',
+          title: `${sourceConv.title} (Copy)`,
+          type: sourceConv.type,
+          privacy: sourceConv.privacy,
+          settings: sourceConv.settings as never,
+          current_message_leaf_id: sourceConv.current_message_leaf_id
+            ? (idMap.get(sourceConv.current_message_leaf_id) ?? null)
+            : null,
+        });
+      if (insertConvErr) throw insertConvErr;
+
+      if (messages.length > 0) {
+        const rows = messages.map((m) => ({
+          id: idMap.get(m.id)!,
+          conversation_id: newConvId,
+          parent_message_id: m.parent_message_id
+            ? (idMap.get(m.parent_message_id) ?? null)
+            : null,
+          role: m.role,
+          content: m.content as never,
+          rating: m.rating ?? 0,
+        }));
+        const { error: insertMsgErr } = await supabase
+          .from('messages')
+          .insert(rows);
+        if (insertMsgErr) throw insertMsgErr;
+      }
+
+      return newConvId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      toast({
+        title: 'Duplicated',
+        description: 'Conversation copied — find it at the top of the list.',
+      });
+    },
+    onError: (error: unknown) => {
+      console.error('Error duplicating conversation:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to duplicate conversation',
+        variant: 'destructive',
+      });
+    },
+  });
+
   const togglePrivacy = useMutation({
     mutationFn: async ({
       conversationId,
@@ -466,6 +555,9 @@ export function HistoryView() {
                           isEditing={!!editingConversation}
                           isPinned={true}
                           onTogglePin={togglePin}
+                          onDuplicate={(id) =>
+                            duplicateConversation.mutate(id)
+                          }
                         />
                       ))}
                     </div>
@@ -510,6 +602,9 @@ export function HistoryView() {
                             isEditing={!!editingConversation}
                             isPinned={false}
                             onTogglePin={togglePin}
+                            onDuplicate={(id) =>
+                              duplicateConversation.mutate(id)
+                            }
                           />
                         ))}
                       </div>
