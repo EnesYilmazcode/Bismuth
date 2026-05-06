@@ -3,6 +3,7 @@ import {
   OrbitControls,
   GizmoHelper,
   GizmoViewcube,
+  Grid,
   Stage,
   Environment,
   OrthographicCamera,
@@ -65,6 +66,7 @@ export function ThreeScene({
 }: ThreeSceneProps) {
   const [isOrthographic, setIsOrthographic] = useState(true);
   const [pendingPreset, setPendingPreset] = useState<CameraPreset | null>(null);
+  const [showGrid, setShowGrid] = useState(false);
 
   // Store the initial isMobile value to prevent position changes during resize
   const [initialIsMobile] = useState(isMobile);
@@ -131,18 +133,24 @@ export function ThreeScene({
             </mesh>
           ) : null}
         </Stage>
-        {/* <Grid
-          position={[0, 0, 0]}
-          cellSize={30}
-          cellThickness={0.5}
-          sectionSize={10}
-          sectionColor="gray"
-          sectionThickness={0.5}
-          fadeDistance={500}
-          fadeStrength={1}
-          followCamera={false}
-          infiniteGrid={true}
-        /> */}
+        {showGrid && (
+          <>
+            <Grid
+              position={[0, -0.01, 0]}
+              cellSize={10}
+              cellThickness={0.5}
+              cellColor="#5a5a5a"
+              sectionSize={50}
+              sectionColor="#888"
+              sectionThickness={0.8}
+              fadeDistance={600}
+              fadeStrength={1.2}
+              followCamera={false}
+              infiniteGrid={true}
+            />
+            <axesHelper args={[80]} />
+          </>
+        )}
         <OrbitControls makeDefault enableDamping={true} dampingFactor={0.05} />
         <CameraPresetApplier
           preset={pendingPreset}
@@ -182,6 +190,22 @@ export function ThreeScene({
             {preset}
           </button>
         ))}
+        <span className="mx-0.5 h-3 w-px bg-adam-neutral-700/60" />
+        <button
+          type="button"
+          onClick={() => setShowGrid((v) => !v)}
+          aria-pressed={showGrid}
+          aria-label="Toggle grid and axes"
+          title="Toggle grid and axes"
+          className={cn(
+            'rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider transition-colors',
+            showGrid
+              ? 'bg-adam-blue/30 text-adam-text-primary'
+              : 'text-adam-neutral-300 hover:bg-adam-neutral-800 hover:text-adam-text-primary',
+          )}
+        >
+          grid
+        </button>
       </div>
     </div>
   );
