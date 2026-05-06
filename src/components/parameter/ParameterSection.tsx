@@ -105,17 +105,41 @@ export function ParameterSection({
   // Split params into the main list (non-color, shown by default) and a
   // collapsible Colors group below it. Keeps the dimensions the user
   // usually wants front-and-center while colors stay one click away.
-  const { mainParameters, colorParameters } = useMemo(() => {
+  // If the SCAD code uses /* [Group] */ headers, surface those groups
+  // inside the Dimensions section so the panel mirrors the source layout.
+  const { mainParameters, colorParameters, dimensionGroups } = useMemo(() => {
     const main: Parameter[] = [];
     const color: Parameter[] = [];
     for (const p of parameters) {
       if (isColorParameter(p)) color.push(p);
       else main.push(p);
     }
-    return { mainParameters: main, colorParameters: color };
+    const groupOrder: string[] = [];
+    const byGroup = new Map<string, Parameter[]>();
+    for (const p of main) {
+      const key = p.group?.trim() || '';
+      if (!byGroup.has(key)) {
+        byGroup.set(key, []);
+        groupOrder.push(key);
+      }
+      byGroup.get(key)!.push(p);
+    }
+    const hasNamedGroups = groupOrder.some((g) => g !== '');
+    return {
+      mainParameters: main,
+      colorParameters: color,
+      dimensionGroups: hasNamedGroups
+        ? groupOrder.map((g) => ({ name: g, items: byGroup.get(g)! }))
+        : null,
+    };
   }, [parameters]);
   const [colorsOpen, setColorsOpen] = useState(true);
   const [dimensionsOpen, setDimensionsOpen] = useState(true);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const isGroupOpen = (key: string) =>
+    openGroups[key] === undefined ? true : openGroups[key];
+  const toggleGroup = (key: string) =>
+    setOpenGroups((s) => ({ ...s, [key]: !isGroupOpen(key) }));
 
   // Debounce timer for compilation
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -331,13 +355,41 @@ export function ParameterSection({
                 </CollapsibleTrigger>
                 <CollapsibleContent className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0">
                   <div className="mt-3 flex flex-col gap-3">
-                    {mainParameters.map((param) => (
-                      <ParameterInput
-                        key={param.name}
-                        param={param}
-                        handleCommit={handleCommit}
-                      />
-                    ))}
+                    {dimensionGroups
+                      ? dimensionGroups.map((g) => (
+                          <Collapsible
+                            key={g.name || '__ungrouped'}
+                            open={isGroupOpen(g.name)}
+                            onOpenChange={() => toggleGroup(g.name)}
+                          >
+                            <CollapsibleTrigger className="group flex w-full items-center justify-between gap-2 rounded-md py-1 text-[10.5px] font-semibold uppercase tracking-wider text-adam-neutral-300 transition-colors focus:outline-none">
+                              <span>{g.name || 'Other'}</span>
+                              <ChevronDown
+                                className={`h-3 w-3 text-adam-neutral-500 transition-all duration-200 group-hover:text-adam-text-primary ${
+                                  isGroupOpen(g.name) ? 'rotate-180' : ''
+                                }`}
+                              />
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0">
+                              <div className="mt-2 flex flex-col gap-3">
+                                {g.items.map((param) => (
+                                  <ParameterInput
+                                    key={param.name}
+                                    param={param}
+                                    handleCommit={handleCommit}
+                                  />
+                                ))}
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        ))
+                      : mainParameters.map((param) => (
+                          <ParameterInput
+                            key={param.name}
+                            param={param}
+                            handleCommit={handleCommit}
+                          />
+                        ))}
                   </div>
                 </CollapsibleContent>
               </Collapsible>
