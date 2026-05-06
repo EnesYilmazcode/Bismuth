@@ -1,6 +1,7 @@
 import { Maximize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BenchmarkModel } from '@/hooks/useBenchmarkConfig';
+import { BenchmarkViewer } from '@/components/benchmark/BenchmarkViewer';
 
 export type BenchmarkStatus =
   | 'idle'
@@ -79,18 +80,17 @@ export function BenchmarkPane({
         )}
       </header>
       <div className="relative flex-1 bg-adam-neutral-700/40">
-        {/* Viewer plumbing (R3F + OpenSCAD compile) lands in the next commits.
-            For now show a placeholder that mirrors the parametric viewer's
-            empty state so the layout is reviewable. */}
-        <div className="absolute inset-0 flex items-center justify-center text-[11px] uppercase tracking-wider text-adam-neutral-500">
-          {status === 'error'
-            ? error || 'error'
-            : status === 'idle'
-              ? 'awaiting prompt'
-              : code
-                ? 'rendering…'
+        {code && status !== 'error' ? (
+          <BenchmarkViewer code={code} />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center px-3 text-center text-[11px] uppercase tracking-wider text-adam-neutral-500">
+            {status === 'error'
+              ? error || 'error'
+              : status === 'idle'
+                ? 'awaiting prompt'
                 : 'waiting for response'}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
