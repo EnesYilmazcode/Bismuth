@@ -67,6 +67,19 @@ export function ThreeScene({
   const [isOrthographic, setIsOrthographic] = useState(true);
   const [pendingPreset, setPendingPreset] = useState<CameraPreset | null>(null);
   const [showGrid, setShowGrid] = useState(false);
+  // Cycle the canvas backdrop between dark / studio / light. Driven entirely
+  // here — `backgroundColor` from the parent is treated as the dark default.
+  const [bgMode, setBgMode] = useState<'dark' | 'studio' | 'light'>('dark');
+  const effectiveBg =
+    bgMode === 'studio'
+      ? '#1B1B1B'
+      : bgMode === 'light'
+        ? '#E8E8EC'
+        : backgroundColor;
+  const cycleBg = () =>
+    setBgMode((m) =>
+      m === 'dark' ? 'studio' : m === 'studio' ? 'light' : 'dark',
+    );
 
   // Store the initial isMobile value to prevent position changes during resize
   const [initialIsMobile] = useState(isMobile);
@@ -84,7 +97,7 @@ export function ThreeScene({
   return (
     <div className="relative h-full w-full overflow-hidden">
       <Canvas className="block h-full w-full">
-        <color attach="background" args={[backgroundColor]} />
+        <color attach="background" args={[effectiveBg]} />
         {isOrthographic ? (
           <OrthographicCamera
             makeDefault
@@ -205,6 +218,15 @@ export function ThreeScene({
           )}
         >
           grid
+        </button>
+        <button
+          type="button"
+          onClick={cycleBg}
+          aria-label={`Background: ${bgMode}, click to change`}
+          title={`Background: ${bgMode}`}
+          className="rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-adam-neutral-300 transition-colors hover:bg-adam-neutral-800 hover:text-adam-text-primary"
+        >
+          {bgMode}
         </button>
       </div>
     </div>
