@@ -24,6 +24,27 @@ const POLL_INTERVAL_MS = 200;
 
 const log = (...a) => console.log('[bridge]', ...a);
 
+// In-memory stats so /stats can answer without re-walking the filesystem on
+// every request. Updated as prompts arrive and replies finish.
+const stats = {
+  startedAt: new Date().toISOString(),
+  promptsReceived: 0,
+  repliesDelivered: 0,
+  errors: 0,
+  lastPrompt: /** @type {null | {id:string,mode:string,model:string,text:string,at:string}} */ (
+    null
+  ),
+  lastReplyAt: /** @type {string|null} */ (null),
+};
+
+async function readDirSafe(dir) {
+  try {
+    return await fsp.readdir(dir);
+  } catch {
+    return [];
+  }
+}
+
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': '*',
@@ -151,6 +172,14 @@ async function handleChat(req, res, mode) {
       promptText.slice(0, 200),
     )}`,
   );
+  stats.promptsReceived += 1;
+  stats.lastPrompt = {
+    id,
+    mode,
+    model: ctx.model,
+    text: String(promptText).slice(0, 200),
+    at: new Date().toISOString(),
+  };
 
   // Stream response in the ND-JSON shape parametric-chat / creative-chat use.
   res.writeHead(200, {
@@ -190,8 +219,11 @@ async function handleChat(req, res, mode) {
   try {
     const reply = await waitForOutbox(id, req.signal);
     final = buildAssistantMessage(reply, ctx);
+    stats.repliesDelivered += 1;
+    stats.lastReplyAt = new Date().toISOString();
   } catch (e) {
     log('chat error:', e.message);
+    stats.errors += 1;
     final = {
       ...placeholder,
       content: {
@@ -265,6 +297,28 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (url.pathname === '/health') return send(res, 200, { ok: true });
+
+    if (url.pathname === '/stats') {
+      const [inboxFiles, outboxFiles, processedFiles] = await Promise.all([
+        readDirSafe(INBOX),
+        readDirSafe(OUTBOX),
+        readDirSafe(PROCESSED),
+      ]);
+      return send(res, 200, {
+        ok: true,
+        startedAt: stats.startedAt,
+        promptsReceived: stats.promptsReceived,
+        repliesDelivered: stats.repliesDelivered,
+        errors: stats.errors,
+        lastPrompt: stats.lastPrompt,
+        lastReplyAt: stats.lastReplyAt,
+        queue: {
+          inbox: inboxFiles.filter((f) => f.endsWith('.json')).length,
+          outbox: outboxFiles.filter((f) => f.endsWith('.json')).length,
+          processed: processedFiles.filter((f) => f.endsWith('.json')).length,
+        },
+      });
+    }
 
     if (url.pathname === '/functions/v1/parametric-chat')
       return handleChat(req, res, 'parametric');
