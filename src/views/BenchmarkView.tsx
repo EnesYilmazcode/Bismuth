@@ -3,6 +3,8 @@ import { ExternalLink, KeyRound, Loader2, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useBenchmarkConfig } from '@/hooks/useBenchmarkConfig';
+import { useBenchmarkSelection } from '@/hooks/useBenchmarkSelection';
+import { BenchmarkModelPicker } from '@/components/benchmark/BenchmarkModelPicker';
 
 // Benchmark mode — runs one prompt against several AI models in parallel
 // and renders each model's OpenSCAD result in its own auto-rotating viewer
@@ -13,9 +15,13 @@ export function BenchmarkView() {
   const [prompt, setPrompt] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const config = useBenchmarkConfig();
+  const { selected, setSelected } = useBenchmarkSelection(config.models);
 
   const canSubmit =
-    prompt.trim().length > 0 && !isRunning && config.configured;
+    prompt.trim().length > 0 &&
+    !isRunning &&
+    config.configured &&
+    selected.length > 0;
 
   const handleSubmit = () => {
     if (!canSubmit) return;
@@ -28,14 +34,23 @@ export function BenchmarkView() {
   return (
     <div className="flex h-full min-w-0 flex-1 flex-col bg-adam-background-1">
       <header className="border-b border-adam-neutral-800/60 px-6 pb-4 pt-10 md:px-20 md:py-6">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-1">
-          <h1 className="text-2xl font-medium text-adam-neutral-10">
-            Benchmark
-          </h1>
-          <p className="text-sm text-adam-neutral-400">
-            Compare how different AI models tackle the same CAD prompt, side by
-            side. Each pane is an independent OpenSCAD viewer.
-          </p>
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl font-medium text-adam-neutral-10">
+              Benchmark
+            </h1>
+            <p className="text-sm text-adam-neutral-400">
+              Compare how different AI models tackle the same CAD prompt, side
+              by side. Each pane is an independent OpenSCAD viewer.
+            </p>
+          </div>
+          {config.configured && config.models.length > 0 && (
+            <BenchmarkModelPicker
+              available={config.models}
+              selected={selected}
+              onChange={setSelected}
+            />
+          )}
         </div>
       </header>
 
