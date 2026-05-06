@@ -1,4 +1,4 @@
-import { Maximize2 } from 'lucide-react';
+import { AlertTriangle, Hourglass, Loader2, Maximize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BenchmarkModel } from '@/hooks/useBenchmarkConfig';
 import { BenchmarkViewer } from '@/components/benchmark/BenchmarkViewer';
@@ -83,13 +83,7 @@ export function BenchmarkPane({
         {code && status !== 'error' ? (
           <BenchmarkViewer code={code} />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center px-3 text-center text-[11px] uppercase tracking-wider text-adam-neutral-500">
-            {status === 'error'
-              ? error || 'error'
-              : status === 'idle'
-                ? 'awaiting prompt'
-                : 'waiting for response'}
-          </div>
+          <PaneOverlay status={status} error={error} />
         )}
       </div>
     </div>
@@ -99,4 +93,46 @@ export function BenchmarkPane({
 function formatDuration(ms: number): string {
   if (ms < 1000) return `${ms} ms`;
   return `${(ms / 1000).toFixed(ms < 10000 ? 2 : 1)} s`;
+}
+
+function PaneOverlay({
+  status,
+  error,
+}: {
+  status: BenchmarkStatus;
+  error?: string | null;
+}) {
+  if (status === 'error') {
+    return (
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center">
+        <AlertTriangle className="h-5 w-5 text-red-400" />
+        <span className="text-[11px] font-medium uppercase tracking-wider text-red-400">
+          error
+        </span>
+        {error && (
+          <p className="line-clamp-3 max-w-[260px] text-[11px] leading-relaxed text-adam-neutral-300">
+            {error}
+          </p>
+        )}
+      </div>
+    );
+  }
+  if (status === 'streaming' || status === 'compiling') {
+    return (
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+        <Loader2 className="h-5 w-5 animate-spin text-adam-blue" />
+        <span className="text-[11px] uppercase tracking-wider text-adam-neutral-400">
+          {status === 'streaming' ? 'awaiting model output' : 'compiling'}
+        </span>
+      </div>
+    );
+  }
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+      <Hourglass className="h-5 w-5 text-adam-neutral-500" />
+      <span className="text-[11px] uppercase tracking-wider text-adam-neutral-500">
+        {status === 'idle' ? 'idle' : 'queued'}
+      </span>
+    </div>
+  );
 }
