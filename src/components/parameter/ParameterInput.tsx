@@ -11,6 +11,25 @@ import { ParameterSlider } from '@/components/parameter/ParameterSlider';
 import { Label } from '@/components/ui/label';
 import { ColorPicker } from '@/components/parameter/ColorPicker';
 
+function isModifiedFromDefault(param: Parameter): boolean {
+  const { defaultValue: def, value: val } = param;
+  if (Array.isArray(def) && Array.isArray(val)) {
+    return def.length !== val.length || def.some((d, i) => d !== val[i]);
+  }
+  return def !== val;
+}
+
+function ModifiedDot({ visible }: { visible: boolean }) {
+  if (!visible) return null;
+  return (
+    <span
+      aria-label="Modified from default"
+      title="Modified from default"
+      className="h-1.5 w-1.5 shrink-0 rounded-full bg-adam-blue/80"
+    />
+  );
+}
+
 export function ParameterInput({
   param,
   handleCommit,
@@ -23,6 +42,8 @@ export function ParameterInput({
   useEffect(() => {
     setParamState(param);
   }, [param]);
+
+  const modified = isModifiedFromDefault(paramState);
 
   const onEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -43,10 +64,13 @@ export function ParameterInput({
     return (
       <div className="grid w-full grid-cols-[80px_1fr] items-center gap-3">
         <Label
-          className="overflow-hidden text-ellipsis text-xs font-normal text-adam-neutral-300"
+          className="flex items-center gap-1.5 overflow-hidden text-xs font-normal text-adam-neutral-300"
           htmlFor={paramState.name}
         >
-          {paramState.displayName}
+          <ModifiedDot visible={modified} />
+          <span className="overflow-hidden text-ellipsis">
+            {paramState.displayName}
+          </span>
         </Label>
         <div className="flex w-full items-center gap-3">
           <ParameterSlider
@@ -82,10 +106,13 @@ export function ParameterInput({
     return (
       <div className="grid w-full grid-cols-[80px_1fr] items-center gap-3">
         <Label
-          className="overflow-hidden text-ellipsis text-xs font-normal text-adam-neutral-300"
+          className="flex items-center gap-1.5 overflow-hidden text-xs font-normal text-adam-neutral-300"
           htmlFor={paramState.name}
         >
-          {paramState.displayName}
+          <ModifiedDot visible={modified} />
+          <span className="overflow-hidden text-ellipsis">
+            {paramState.displayName}
+          </span>
         </Label>
         <Switch
           id={paramState.name}
@@ -110,11 +137,12 @@ export function ParameterInput({
       return (
         <div className="grid w-full grid-cols-[80px_1fr] items-center gap-3">
           <Label
-            className="overflow-hidden text-ellipsis text-xs font-normal text-adam-neutral-300"
+            className="flex items-center gap-1.5 overflow-hidden text-xs font-normal text-adam-neutral-300"
             htmlFor={paramState.name}
             title={paramState.displayName}
           >
-            {labelText}
+            <ModifiedDot visible={modified} />
+            <span className="overflow-hidden text-ellipsis">{labelText}</span>
           </Label>
           <ColorPicker
             color={hex}
@@ -126,10 +154,13 @@ export function ParameterInput({
     return (
       <div className="grid w-full grid-cols-[80px_1fr] items-center gap-3">
         <Label
-          className="overflow-hidden text-ellipsis text-xs font-normal text-adam-neutral-300"
+          className="flex items-center gap-1.5 overflow-hidden text-xs font-normal text-adam-neutral-300"
           htmlFor={paramState.name}
         >
-          {paramState.displayName}
+          <ModifiedDot visible={modified} />
+          <span className="overflow-hidden text-ellipsis">
+            {paramState.displayName}
+          </span>
         </Label>
         <Input
           id={paramState.name}
@@ -150,10 +181,13 @@ export function ParameterInput({
       return (
         <div className="grid w-full grid-cols-[80px_1fr] items-start gap-3">
           <Label
-            className="overflow-hidden text-ellipsis pt-2 text-xs font-normal text-adam-neutral-300"
+            className="flex items-center gap-1.5 overflow-hidden pt-2 text-xs font-normal text-adam-neutral-300"
             htmlFor={paramState.name}
           >
-            {paramState.displayName}
+            <ModifiedDot visible={modified} />
+            <span className="overflow-hidden text-ellipsis">
+              {paramState.displayName}
+            </span>
           </Label>
           <div className="flex w-full flex-col gap-2">
             {paramState.value.map((value, index) => (
@@ -194,10 +228,13 @@ export function ParameterInput({
       return (
         <div className="grid w-full grid-cols-[80px_1fr] items-start gap-3">
           <Label
-            className="overflow-hidden text-ellipsis pt-2 text-xs font-normal text-adam-neutral-300"
+            className="flex items-center gap-1.5 overflow-hidden pt-2 text-xs font-normal text-adam-neutral-300"
             htmlFor={paramState.name}
           >
-            {paramState.displayName}
+            <ModifiedDot visible={modified} />
+            <span className="overflow-hidden text-ellipsis">
+              {paramState.displayName}
+            </span>
           </Label>
           <div className="flex w-full flex-col gap-2">
             {paramState.value.map((value, index) => {
@@ -281,10 +318,13 @@ export function ParameterInput({
       return (
         <div className="grid w-full grid-cols-[80px_1fr] items-start gap-3">
           <Label
-            className="overflow-hidden text-ellipsis pt-2 text-xs font-normal text-adam-neutral-300"
+            className="flex items-center gap-1.5 overflow-hidden pt-2 text-xs font-normal text-adam-neutral-300"
             htmlFor={paramState.name}
           >
-            {paramState.displayName}
+            <ModifiedDot visible={modified} />
+            <span className="overflow-hidden text-ellipsis">
+              {paramState.displayName}
+            </span>
           </Label>
           <div className="flex w-full flex-col gap-2">
             {paramState.value.map((value, index) => (
