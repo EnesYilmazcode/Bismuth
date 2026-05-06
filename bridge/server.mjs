@@ -11,7 +11,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import parseParameters from './parseParameter.mjs';
 import { loadEnv } from './env.mjs';
-import { hasOpenRouterKey, listBenchmarkModels } from './openrouter.mjs';
+import {
+  hasOpenRouterKey,
+  listBenchmarkModels,
+  streamCompletion,
+} from './openrouter.mjs';
 
 loadEnv();
 
@@ -279,6 +283,61 @@ async function handleBillingStatus(_req, res) {
   });
 }
 
+async function handleBenchmark(req, res) {
+  if (!hasOpenRouterKey()) {
+    return send(res, 503, {
+      error:
+        'OPENROUTER_API_KEY is not set. Add it to .env.local and restart the bridge.',
+    });
+  }
+  const body = await readBody(req).catch(() => ({}));
+  const prompt = String(body.prompt || '').trim();
+  const models = Array.isArray(body.models)
+    ? body.models.filter((m) => typeof m === 'string' && m.length > 0)
+    : [];
+  if (!prompt) return send(res, 400, { error: 'prompt required' });
+  if (models.length === 0)
+    return send(res, 400, { error: 'at least one model required' });
+
+  res.writeHead(200, {
+    ...CORS,
+    'Content-Type': 'application/x-ndjson',
+    'Cache-Control': 'no-cache',
+  });
+
+  const controller = new AbortController();
+  req.on('close', () => controller.abort());
+
+  const writeEvent = (event) => {
+    try {
+      // For 'done' events we attach parsed parameters here so the frontend
+      // doesn't ship the SCAD parser. Keep the artifact shape close to
+      // parametric-chat's so the same OpenSCAD viewer can render it.
+      let payload = event;
+      if (event.type === 'done' && event.code) {
+        payload = {
+          ...event,
+          parameters: parseParameters(event.code),
+        };
+      }
+      res.write(JSON.stringify(payload) + '\n');
+    } catch {}
+  };
+
+  log(`BENCHMARK prompt=${JSON.stringify(prompt.slice(0, 120))} models=${models.join(',')}`);
+  await Promise.all(
+    models.map((m) =>
+      streamCompletion({
+        model: m,
+        prompt,
+        signal: controller.signal,
+        onEvent: writeEvent,
+      }),
+    ),
+  );
+  res.end();
+}
+
 async function handleMesh(_req, res) {
   // We don't support real mesh generation. Return a helpful error so the
   // creative path doesn't hang silently.
@@ -308,6 +367,9 @@ const server = http.createServer(async (req, res) => {
         models: listBenchmarkModels(),
       });
     }
+
+    if (url.pathname === '/functions/v1/benchmark')
+      return handleBenchmark(req, res);
 
     if (url.pathname === '/stats') {
       const [inboxFiles, outboxFiles, processedFiles] = await Promise.all([

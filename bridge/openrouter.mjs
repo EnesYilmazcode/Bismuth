@@ -89,3 +89,117 @@ export function hasOpenRouterKey() {
 export function listBenchmarkModels() {
   return BENCHMARK_MODELS.map((m) => ({ ...m }));
 }
+
+const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
+// Bias each model toward terse, slider-friendly OpenSCAD. Matches the
+// conventions documented in .claude/openscad-prompting.md so all models
+// produce comparable artifacts.
+export const BENCHMARK_SYSTEM_PROMPT = `You are an OpenSCAD code generator for a parametric CAD viewer.
+
+Respond with a SINGLE OpenSCAD source file and absolutely nothing else — no prose, no markdown fences, no explanations. The file must compile in OpenSCAD WASM (Manifold backend).
+
+Conventions:
+- Put every tunable parameter declaration ("name = number;") at the TOP of the file, BEFORE the first module or function definition. Use full descriptive snake_case names (e.g. mug_height, not h).
+- Annotate sliders with trailing comments: "// [min:step:max]" or "// [min:max]" (step defaults to 1). Use realistic mm units.
+- Group related params with /* [Group Name] */ on its own line.
+- Keep $fn at 24–40 at the file level.
+- Prefer linear_extrude(offset(square(...))) for rounded boxes. Avoid hull() of more than 4 primitives at large coordinates and avoid minkowski().
+- Center the geometry near the origin so the auto-rotating preview shows it well.
+
+If the user asks for something that's not a 3D object, still respond with a valid OpenSCAD file (e.g. a placeholder cube).`;
+
+function stripCodeFences(text) {
+  return text
+    .replace(/^```(?:openscad|scad)?\s*\n/, '')
+    .replace(/\n?```\s*$/, '')
+    .trim();
+}
+
+export async function streamCompletion({ model, prompt, signal, onEvent }) {
+  const startedAt = Date.now();
+  onEvent({
+    model,
+    type: 'start',
+    startedAt: new Date(startedAt).toISOString(),
+  });
+
+  if (!hasOpenRouterKey()) {
+    onEvent({
+      model,
+      type: 'error',
+      message: 'OPENROUTER_API_KEY not set',
+      durationMs: 0,
+    });
+    return;
+  }
+
+  let accumulated = '';
+  try {
+    const res = await fetch(OPENROUTER_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        // OpenRouter uses these for ranking + analytics — they're optional but
+        // recommended. The Referer needn't be reachable.
+        'HTTP-Referer': 'http://127.0.0.1:3000/bismuth/',
+        'X-Title': 'Bismuth Benchmark',
+      },
+      body: JSON.stringify({
+        model,
+        stream: true,
+        messages: [
+          { role: 'system', content: BENCHMARK_SYSTEM_PROMPT },
+          { role: 'user', content: prompt },
+        ],
+      }),
+      signal,
+    });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      throw new Error(
+        `OpenRouter ${res.status} ${res.statusText}: ${errText.slice(0, 200)}`,
+      );
+    }
+    const decoder = new TextDecoder();
+    let buf = '';
+    for await (const chunk of res.body) {
+      buf += decoder.decode(chunk, { stream: true });
+      // SSE events are separated by blank lines.
+      let idx;
+      while ((idx = buf.indexOf('\n\n')) >= 0) {
+        const event = buf.slice(0, idx);
+        buf = buf.slice(idx + 2);
+        for (const line of event.split('\n')) {
+          const data = line.startsWith('data:') ? line.slice(5).trim() : '';
+          if (!data || data === '[DONE]') continue;
+          let json;
+          try {
+            json = JSON.parse(data);
+          } catch {
+            continue;
+          }
+          const delta = json?.choices?.[0]?.delta?.content;
+          if (typeof delta === 'string' && delta.length > 0) {
+            accumulated += delta;
+            onEvent({ model, type: 'delta', text: delta });
+          }
+        }
+      }
+    }
+    onEvent({
+      model,
+      type: 'done',
+      durationMs: Date.now() - startedAt,
+      code: stripCodeFences(accumulated),
+    });
+  } catch (e) {
+    onEvent({
+      model,
+      type: 'error',
+      message: e instanceof Error ? e.message : String(e),
+      durationMs: Date.now() - startedAt,
+    });
+  }
+}
