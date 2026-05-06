@@ -6,6 +6,7 @@ import {
   Loader2,
   Bookmark,
   Trash2,
+  ClipboardCopy,
 } from 'lucide-react';
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
@@ -63,6 +64,26 @@ export function ParameterSection({
   const { presets, savePreset, deletePreset } = useParameterPresets();
   const [selectedFormat, setSelectedFormat] = useState<DownloadFormat>('stl');
   const [isExporting, setIsExporting] = useState(false);
+
+  const handleCopyValuesJson = async () => {
+    const values = Object.fromEntries(
+      parameters.map((p) => [p.name, p.value]),
+    );
+    const json = JSON.stringify(values, null, 2);
+    try {
+      await navigator.clipboard.writeText(json);
+      toast({
+        title: 'Copied',
+        description: `${parameters.length} parameter${parameters.length === 1 ? '' : 's'} as JSON.`,
+      });
+    } catch {
+      toast({
+        title: 'Copy failed',
+        description: 'Clipboard access blocked — copy from devtools instead.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const handleSavePreset = () => {
     const name = window.prompt('Name this preset:', '');
@@ -278,6 +299,14 @@ export function ParameterSection({
                 >
                   <Bookmark className="mr-2 h-4 w-4" />
                   Save current values…
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleCopyValuesJson}
+                  disabled={parameters.length === 0}
+                  className="cursor-pointer text-adam-text-primary"
+                >
+                  <ClipboardCopy className="mr-2 h-4 w-4" />
+                  Copy values as JSON
                 </DropdownMenuItem>
                 {presets.length === 0 ? (
                   <div className="px-2 py-1.5 text-xs text-adam-neutral-400">
