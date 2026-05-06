@@ -5,6 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useBenchmarkConfig } from '@/hooks/useBenchmarkConfig';
 import { useBenchmarkSelection } from '@/hooks/useBenchmarkSelection';
 import { BenchmarkModelPicker } from '@/components/benchmark/BenchmarkModelPicker';
+import { BenchmarkGrid } from '@/components/benchmark/BenchmarkGrid';
+import { BenchmarkPane } from '@/components/benchmark/BenchmarkPane';
 
 // Benchmark mode — runs one prompt against several AI models in parallel
 // and renders each model's OpenSCAD result in its own auto-rotating viewer
@@ -54,13 +56,35 @@ export function BenchmarkView() {
         </div>
       </header>
 
-      <div className="flex flex-1 items-center justify-center px-6 text-sm text-adam-neutral-500">
+      <div className="flex flex-1 flex-col overflow-auto">
         {config.isLoading ? (
-          <Loader2 className="h-5 w-5 animate-spin text-adam-neutral-400" />
+          <div className="flex flex-1 items-center justify-center">
+            <Loader2 className="h-5 w-5 animate-spin text-adam-neutral-400" />
+          </div>
         ) : !config.configured ? (
-          <SetupCard error={config.error} />
+          <div className="flex flex-1 items-center justify-center px-6">
+            <SetupCard error={config.error} />
+          </div>
+        ) : selected.length === 0 ? (
+          <div className="flex flex-1 items-center justify-center px-6 text-sm text-adam-neutral-500">
+            Pick at least one model above to lay out viewer panes.
+          </div>
         ) : (
-          'Pick models and run a prompt to see results here.'
+          <BenchmarkGrid count={selected.length}>
+            {selected.map((id) => {
+              const model = config.models.find((m) => m.id === id);
+              if (!model) return null;
+              return (
+                <BenchmarkPane
+                  key={id}
+                  model={model}
+                  status="idle"
+                  code=""
+                  durationMs={null}
+                />
+              );
+            })}
+          </BenchmarkGrid>
         )}
       </div>
 
