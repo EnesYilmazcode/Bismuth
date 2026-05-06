@@ -20,6 +20,7 @@ import {
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useQuery } from '@tanstack/react-query';
 import { ConditionalWrapper } from './ConditionalWrapper';
+import { BridgeHealthPill } from './BridgeHealthPill';
 import { Conversation, ConversationSettings } from '@shared/types';
 
 interface SidebarProps {
@@ -214,6 +215,7 @@ function DesktopSidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProps) {
           </nav>
         </div>
 
+        <BridgeHealthPill collapsed={!isSidebarOpen} />
       </div>
     </div>
   );
