@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, Plus, LayoutGrid } from 'lucide-react';
+import { Menu, Plus, LayoutGrid, Swords } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -148,6 +148,13 @@ function DesktopSidebar({ isSidebarOpen, setIsSidebarOpen }: SidebarProps) {
                 href: '/history',
                 description: 'View past creations',
                 submenu: recentConversations,
+              },
+              {
+                icon: Swords,
+                label: 'Benchmark',
+                href: '/benchmark',
+                description: 'Compare AI models on the same prompt',
+                submenu: undefined,
               },
             ].map(({ icon: Icon, label, href, description, submenu }) => (
               <div key={label} className="space-y-1">
