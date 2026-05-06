@@ -14,6 +14,8 @@ interface BenchmarkPaneProps {
   model: BenchmarkModel;
   status: BenchmarkStatus;
   code: string;
+  /** Raw streamed text — shown as a tail-peek footer while the model writes. */
+  streaming?: string;
   durationMs: number | null;
   error?: string | null;
   onFullscreen?: () => void;
@@ -39,10 +41,12 @@ export function BenchmarkPane({
   model,
   status,
   code,
+  streaming = '',
   durationMs,
   error,
   onFullscreen,
 }: BenchmarkPaneProps) {
+  const showStreamPeek = status === 'streaming' && streaming.length > 0;
   return (
     <div className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-adam-neutral-700 bg-adam-bg-secondary-dark">
       <header className="flex items-center justify-between gap-3 border-b border-adam-neutral-700 bg-adam-bg-secondary-dark/60 px-3 py-2">
@@ -85,6 +89,7 @@ export function BenchmarkPane({
         ) : (
           <PaneOverlay status={status} error={error} />
         )}
+        {showStreamPeek && <StreamPeek text={streaming} />}
       </div>
     </div>
   );
@@ -93,6 +98,25 @@ export function BenchmarkPane({
 function formatDuration(ms: number): string {
   if (ms < 1000) return `${ms} ms`;
   return `${(ms / 1000).toFixed(ms < 10000 ? 2 : 1)} s`;
+}
+
+function StreamPeek({ text }: { text: string }) {
+  // Tail-peek: just the last ~3 lines so the pane header/viewer aren't
+  // crowded out. Trimmed to the most recent characters before splitting so
+  // very long outputs don't spend the whole budget on string slicing.
+  const tail = text.length > 600 ? text.slice(-600) : text;
+  const lines = tail.split('\n').slice(-3);
+  return (
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 max-h-[44%] overflow-hidden bg-gradient-to-t from-adam-neutral-950/95 via-adam-neutral-950/80 to-transparent px-2 pb-1.5 pt-6 font-mono text-[10px] leading-[1.35] text-adam-neutral-300/85">
+      <pre className="m-0 whitespace-pre-wrap break-all">
+        {lines.join('\n')}
+        <span
+          aria-hidden
+          className="ml-[1px] inline-block h-[0.95em] w-[0.5ch] translate-y-[2px] animate-pulse rounded-[1px] bg-adam-blue/90 align-middle"
+        />
+      </pre>
+    </div>
+  );
 }
 
 function PaneOverlay({

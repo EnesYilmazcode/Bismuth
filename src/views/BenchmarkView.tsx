@@ -190,6 +190,7 @@ export function BenchmarkView() {
                   model={model}
                   status={pane.status}
                   code={pane.code}
+                  streaming={pane.streaming}
                   durationMs={pane.durationMs}
                   error={pane.error}
                 />
