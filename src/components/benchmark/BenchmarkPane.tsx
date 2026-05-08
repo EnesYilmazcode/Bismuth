@@ -1,4 +1,10 @@
-import { AlertTriangle, Hourglass, Loader2, Maximize2 } from 'lucide-react';
+import {
+  AlertTriangle,
+  ChevronDown,
+  Hourglass,
+  Loader2,
+  Maximize2,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BenchmarkModel } from '@/hooks/useBenchmarkConfig';
 import { BenchmarkViewer } from '@/components/benchmark/BenchmarkViewer';
@@ -19,6 +25,8 @@ interface BenchmarkPaneProps {
   durationMs: number | null;
   error?: string | null;
   onFullscreen?: () => void;
+  /** When set, the model name in the header becomes a clickable swap target. */
+  onSwapClick?: () => void;
 }
 
 const STATUS_LABELS: Record<BenchmarkStatus, string> = {
@@ -45,33 +53,53 @@ export function BenchmarkPane({
   durationMs,
   error,
   onFullscreen,
+  onSwapClick,
 }: BenchmarkPaneProps) {
   const showStreamPeek = status === 'streaming' && streaming.length > 0;
+  // The model identity cluster (dot + name + vendor/status). Wrapped in a
+  // button when swappable so keyboard + click both reach it.
+  const identity = (
+    <>
+      <span
+        aria-hidden
+        className={cn(
+          'h-1.5 w-1.5 shrink-0 rounded-full',
+          STATUS_DOT_COLOR[status],
+        )}
+      />
+      <div className="flex min-w-0 flex-col text-left">
+        <span className="flex items-center gap-1 truncate text-xs font-semibold text-adam-text-primary">
+          {model.name}
+          {onSwapClick && (
+            <ChevronDown className="h-3 w-3 shrink-0 text-adam-neutral-400" />
+          )}
+        </span>
+        <span className="truncate text-[10px] uppercase tracking-wider text-adam-neutral-500">
+          {model.vendor} · {STATUS_LABELS[status]}
+          {durationMs !== null && status !== 'streaming' && (
+            <span className="ml-1 text-adam-neutral-400">
+              · {formatDuration(durationMs)}
+            </span>
+          )}
+        </span>
+      </div>
+    </>
+  );
   return (
     <div className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-adam-neutral-700 bg-adam-bg-secondary-dark">
       <header className="flex items-center justify-between gap-3 border-b border-adam-neutral-700 bg-adam-bg-secondary-dark/60 px-3 py-2">
-        <div className="flex min-w-0 items-center gap-2">
-          <span
-            aria-hidden
-            className={cn(
-              'h-1.5 w-1.5 shrink-0 rounded-full',
-              STATUS_DOT_COLOR[status],
-            )}
-          />
-          <div className="flex min-w-0 flex-col">
-            <span className="truncate text-xs font-semibold text-adam-text-primary">
-              {model.name}
-            </span>
-            <span className="truncate text-[10px] uppercase tracking-wider text-adam-neutral-500">
-              {model.vendor} · {STATUS_LABELS[status]}
-              {durationMs !== null && status !== 'streaming' && (
-                <span className="ml-1 text-adam-neutral-400">
-                  · {formatDuration(durationMs)}
-                </span>
-              )}
-            </span>
-          </div>
-        </div>
+        {onSwapClick ? (
+          <button
+            type="button"
+            onClick={onSwapClick}
+            aria-label={`Swap ${model.name} for another model`}
+            className="-mx-1 flex min-w-0 items-center gap-2 rounded-md px-1 py-0.5 hover:bg-adam-neutral-800 focus:bg-adam-neutral-800 focus:outline-none"
+          >
+            {identity}
+          </button>
+        ) : (
+          <div className="flex min-w-0 items-center gap-2">{identity}</div>
+        )}
         {onFullscreen && (
           <button
             type="button"

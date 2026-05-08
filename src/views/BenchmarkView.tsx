@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useBenchmarkConfig } from '@/hooks/useBenchmarkConfig';
 import { useBenchmarkSelection } from '@/hooks/useBenchmarkSelection';
 import { BenchmarkExamples } from '@/components/benchmark/BenchmarkExamples';
+import { BenchmarkModelBrowser } from '@/components/benchmark/BenchmarkModelBrowser';
 import { BenchmarkModelPicker } from '@/components/benchmark/BenchmarkModelPicker';
 import { BenchmarkGrid } from '@/components/benchmark/BenchmarkGrid';
 import {
@@ -48,6 +49,7 @@ export function BenchmarkView() {
   const [isRunning, setIsRunning] = useState(false);
   const [paneStates, setPaneStates] = useState<Record<string, PaneState>>({});
   const [fullscreenId, setFullscreenId] = useState<string | null>(null);
+  const [swapTargetId, setSwapTargetId] = useState<string | null>(null);
   const config = useBenchmarkConfig();
   const { selected, setSelected } = useBenchmarkSelection(config.models);
   const abortRef = useRef<AbortController | null>(null);
@@ -179,25 +181,39 @@ export function BenchmarkView() {
     setIsRunning(false);
   };
 
+  // Replace one pane's model in place. Preserves grid order and drops the
+  // old pane's state so the swapped-in model starts fresh. If the new id
+  // was already in the lineup elsewhere, that other pane is removed (a
+  // model can only occupy one pane at a time).
+  const handleSwap = (oldId: string, newId: string) => {
+    if (oldId === newId) return;
+    const next = selected
+      .filter((id) => id !== newId)
+      .map((id) => (id === oldId ? newId : id));
+    setSelected(next);
+    if (fullscreenId === oldId) setFullscreenId(null);
+  };
+
   return (
     <div className="flex h-full min-w-0 flex-1 flex-col bg-adam-background-1">
-      <header className="border-b border-adam-neutral-800/60 px-6 pb-4 pt-10 md:px-20 md:py-6">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-medium text-adam-neutral-10">
+      <header className="border-b border-adam-neutral-800/60 px-6 py-4 md:px-20 md:py-4">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-6 gap-y-3">
+          <div className="flex items-baseline gap-3">
+            <h1 className="text-xl font-medium text-adam-neutral-10">
               Benchmark
             </h1>
-            <p className="text-sm text-adam-neutral-400">
-              Compare how different AI models tackle the same CAD prompt, side
-              by side. Each pane is an independent OpenSCAD viewer.
-            </p>
+            <span className="text-xs text-adam-neutral-500">
+              Same prompt, side-by-side AI models.
+            </span>
           </div>
           {config.configured && config.models.length > 0 && (
-            <BenchmarkModelPicker
-              available={config.models}
-              selected={selected}
-              onChange={setSelected}
-            />
+            <div className="ml-auto">
+              <BenchmarkModelPicker
+                available={config.models}
+                selected={selected}
+                onChange={setSelected}
+              />
+            </div>
           )}
         </div>
       </header>
@@ -231,12 +247,31 @@ export function BenchmarkView() {
                   durationMs={pane.durationMs}
                   error={pane.error}
                   onFullscreen={() => setFullscreenId(id)}
+                  onSwapClick={
+                    isRunning ? undefined : () => setSwapTargetId(id)
+                  }
                 />
               );
             })}
           </BenchmarkGrid>
         )}
       </div>
+
+      <BenchmarkModelBrowser
+        open={swapTargetId !== null}
+        onOpenChange={(open) => {
+          if (!open) setSwapTargetId(null);
+        }}
+        available={config.models}
+        selectedIds={selected}
+        maxSelected={6}
+        mode="replace"
+        replaceTargetId={swapTargetId}
+        onSelect={(newId) => {
+          if (swapTargetId) handleSwap(swapTargetId, newId);
+          setSwapTargetId(null);
+        }}
+      />
 
       {fullscreenId &&
         (() => {
