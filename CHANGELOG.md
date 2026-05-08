@@ -4,6 +4,22 @@ All notable changes to Bismuth are recorded here. Format roughly follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and dates use
 ISO-8601 (UTC).
 
+## [Unreleased]
+
+### Changed
+- Benchmark page UX pass.
+  - Curated example prompts now appear under the input on first load — click
+    one to fill the textarea. Hidden once the user starts typing.
+  - Model selection is now a cmdk-based command palette: search-as-you-type
+    across name + vendor + description, vendor-grouped rows with one-line
+    descriptions, "in lineup" badges, and keyboard-driven selection. Replaces
+    the small chip-row dropdown.
+  - Each pane's header model name is a clickable swap target — opens the
+    palette in replace mode and substitutes that pane's model in place,
+    preserving grid order. Disabled mid-run.
+  - Header collapsed to a single row (title + tagline + picker), reclaiming
+    the vertical space the descriptive paragraph used to take.
+
 ## [0.3.0] — 2026-05-06
 
 ### Added
