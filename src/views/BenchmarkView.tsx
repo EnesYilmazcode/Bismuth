@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useBenchmarkConfig } from '@/hooks/useBenchmarkConfig';
 import { useBenchmarkSelection } from '@/hooks/useBenchmarkSelection';
+import { BenchmarkExamples } from '@/components/benchmark/BenchmarkExamples';
 import { BenchmarkModelPicker } from '@/components/benchmark/BenchmarkModelPicker';
 import { BenchmarkGrid } from '@/components/benchmark/BenchmarkGrid';
 import {
@@ -274,6 +275,14 @@ export function BenchmarkView() {
         })()}
 
       <div className="border-t border-adam-neutral-800/60 bg-adam-bg-secondary-dark/40 px-6 py-4 md:px-20">
+        <div className="mx-auto w-full max-w-6xl">
+          {config.configured && prompt.trim().length === 0 && (
+            <BenchmarkExamples
+              disabled={isRunning}
+              onSelect={(p) => setPrompt(p)}
+            />
+          )}
+        </div>
         <div className="mx-auto flex w-full max-w-6xl items-end gap-3">
           <Textarea
             value={prompt}
