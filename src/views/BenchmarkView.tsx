@@ -7,7 +7,6 @@ import {
   Square,
   X,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useBenchmarkConfig } from '@/hooks/useBenchmarkConfig';
 import { useBenchmarkSelection } from '@/hooks/useBenchmarkSelection';
@@ -318,46 +317,54 @@ export function BenchmarkView() {
             />
           )}
         </div>
-        <div className="mx-auto flex w-full max-w-6xl items-end gap-3">
-          <Textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onKeyDown={(e) => {
-              if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-                e.preventDefault();
-                handleSubmit();
-              }
-            }}
-            placeholder="e.g. a coffee mug with a generous handle and a wall thickness slider"
-            rows={2}
-            className="flex-1 resize-none border border-adam-neutral-700 bg-adam-background-2 text-sm text-adam-text-primary"
-          />
-          {isRunning ? (
-            <Button
-              onClick={handleAbort}
-              className="h-12 gap-2 rounded-lg border border-adam-neutral-600 bg-adam-bg-secondary-dark px-4 text-adam-text-primary hover:bg-adam-neutral-800"
-            >
-              <Square className="h-3.5 w-3.5 fill-current" />
-              Stop
-            </Button>
-          ) : (
-            <Button
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-              className="h-12 gap-2 rounded-lg bg-adam-blue px-4 text-adam-neutral-50 hover:bg-adam-blue/80"
-            >
-              <Send className="h-4 w-4" />
-              Run
-            </Button>
-          )}
+        <div className="mx-auto w-full max-w-6xl">
+          <div className="overflow-hidden rounded-xl border border-adam-neutral-700 bg-adam-background-2 focus-within:border-adam-neutral-500">
+            <Textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={(e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+              placeholder="e.g. a coffee mug with a generous handle and a wall thickness slider"
+              rows={2}
+              className="block w-full resize-none border-0 bg-transparent px-3 py-2.5 text-sm text-adam-text-primary placeholder:text-adam-neutral-500 focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
+            <div className="flex items-center justify-between gap-3 border-t border-adam-neutral-700 px-3 py-2">
+              <span className="truncate text-[11px] text-adam-neutral-500">
+                {!config.configured
+                  ? 'Add OPENROUTER_API_KEY to .env.local to enable Run.'
+                  : selected.length === 0
+                    ? 'Pick at least one model before running.'
+                    : `${selected.length} model${selected.length === 1 ? '' : 's'} ready · ⌘/Ctrl + Enter`}
+              </span>
+              {isRunning ? (
+                <button
+                  type="button"
+                  onClick={handleAbort}
+                  aria-label="Stop benchmark"
+                  title="Stop benchmark"
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-adam-neutral-600 bg-adam-bg-secondary-dark text-adam-text-primary hover:bg-adam-neutral-800"
+                >
+                  <Square className="h-3.5 w-3.5 fill-current" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={!canSubmit}
+                  aria-label="Run benchmark"
+                  title="Run benchmark"
+                  className="flex h-8 w-8 items-center justify-center rounded-md bg-adam-blue text-adam-neutral-50 transition-colors hover:bg-adam-blue/80 disabled:cursor-not-allowed disabled:bg-adam-neutral-700 disabled:text-adam-neutral-400"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
-        <p className="mx-auto mt-2 max-w-6xl text-[11px] text-adam-neutral-500">
-          {!config.configured
-            ? 'Add OPENROUTER_API_KEY to .env.local to enable Run.'
-            : selected.length === 0
-              ? 'Pick at least one model above before running.'
-              : `${selected.length} model${selected.length === 1 ? '' : 's'} ready · ⌘/Ctrl + Enter to submit.`}
-        </p>
       </div>
     </div>
   );
