@@ -65,6 +65,9 @@ That gets the UI running. **Prompts will hang forever until a Claude Code sessio
 
 If you need to reset state, conversation history is in `localStorage['cadam-mock-db-v1']`, and `bridge/inbox/`, `bridge/outbox/`, `bridge/processed/` are safe to delete at any time.
 
+> **Want to try Benchmark mode too?** It needs an OpenRouter key — see
+> [benchmark mode](#benchmark-mode) below for the one-line setup.
+
 ## how Claude responds to prompts
 
 The bridge speaks a simple file protocol. For each request, Claude reads `bridge/inbox/<id>.json` (which contains the prompt, conversation history, and current artifact) and writes a reply to `bridge/outbox/<id>.json` shaped like this:
