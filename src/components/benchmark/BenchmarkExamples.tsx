@@ -29,6 +29,7 @@ export function BenchmarkExamples({
       disabled={disabled}
       suggestions={EXAMPLES}
       onSelect={onSelect}
+      wrap
     />
   );
 }
