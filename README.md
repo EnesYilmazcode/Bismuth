@@ -95,14 +95,61 @@ When the user drags a slider, the bridge re-parses without round-tripping throug
 - STL / SCAD / DXF export, all client-side
 - Conversation history persisted to `localStorage`
 - Uploaded images persisted across reloads via IndexedDB
-- Benchmark mode at `/benchmark` — runs one prompt against several AI models
-  in parallel via OpenRouter (set `OPENROUTER_API_KEY` in `.env.local`) and
-  renders each result in its own auto-rotating 3D pane.
+- Benchmark mode at `/benchmark` — see below.
 
 **Doesn't**
 - Creative / mesh-generation mode (the original CADAM Replicate path) — bridge stub returns 501
 - Image-input prompts — files stay in browser memory but aren't forwarded to Claude
 - Anything needing real Supabase auth: sharing-by-URL, multi-user features, the Stripe billing flow
+
+## benchmark mode
+
+`/benchmark` runs one prompt against several AI models in parallel via
+[OpenRouter](https://openrouter.ai) and renders each model's OpenSCAD result
+in its own auto-rotating 3D pane. Useful for "which model writes the cleanest
+parametric mug?" comparisons without juggling multiple API keys yourself.
+
+This path doesn't go through Claude Code — the bridge calls OpenRouter
+directly, so it works whether or not your Claude session is watching the
+inbox. The curated catalog covers Claude (Sonnet 4.5, Opus 4.1), GPT-5,
+GPT-4o, o3, Gemini 2.5 Pro / 2.0 Flash, DeepSeek V3, Qwen 2.5 Coder, Llama
+3.3 70B, Mistral Large, and Grok 3. Up to 6 models fit on one screen.
+
+**Setup** — copy `.env.local.template` to `.env.local`, drop in your key, and
+restart the bridge:
+
+```bash
+cp .env.local.template .env.local
+# edit .env.local and set OPENROUTER_API_KEY="sk-or-..."
+npm run bridge
+```
+
+Without the key, the page shows a setup card with the exact line to paste.
+Get a key from [openrouter.ai/keys](https://openrouter.ai/keys); the curated
+list above costs ~$0.01–0.10 per side-by-side run depending on which models
+you pick.
+
+**The UI**
+
+- **Example prompts** — eight CAD starters appear under the input on first
+  load (mug, hex bolt, gridfinity bin, lampshade, planter, phone stand,
+  faceted vase, gear pair). Click one to fill the textarea.
+- **Model browser** — search-as-you-type palette with vendor-grouped rows
+  and one-line descriptions. Filters across name, vendor, and capability
+  ("claude", "anthropic", "fast" all work). ↑↓ navigates, Enter toggles,
+  Esc closes.
+- **Per-pane swap** — click any pane's model name to open the palette in
+  replace mode and pick a substitute in place. Grid order is preserved.
+- **Tail-peek** — while a model is writing, the last few lines of streamed
+  SCAD show in the bottom of its pane so you can spot stalls early.
+- **Fullscreen** — hover any pane and click the corner button (or click the
+  pane) to expand it; Esc dismisses.
+- **Stop** — cancels every in-flight model in one click.
+
+The wire format between the frontend and the bridge is one ND-JSON event
+per line: `{model, type: 'start' | 'delta' | 'done' | 'error', ...}`.
+`bridge/openrouter.mjs` owns the curated list and the system prompt that
+biases each model toward valid OpenSCAD with slider-friendly parameters.
 
 ## project structure
 
