@@ -10,9 +10,9 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useBenchmarkConfig } from '@/hooks/useBenchmarkConfig';
 import { useBenchmarkSelection } from '@/hooks/useBenchmarkSelection';
+import { BenchmarkAddTile } from '@/components/benchmark/BenchmarkAddTile';
 import { BenchmarkExamples } from '@/components/benchmark/BenchmarkExamples';
 import { BenchmarkModelBrowser } from '@/components/benchmark/BenchmarkModelBrowser';
-import { BenchmarkModelPicker } from '@/components/benchmark/BenchmarkModelPicker';
 import { BenchmarkGrid } from '@/components/benchmark/BenchmarkGrid';
 import {
   BenchmarkPane,
@@ -38,6 +38,9 @@ const INITIAL_PANE: PaneState = {
   error: null,
 };
 
+// Hard cap so the grid layout stays sane (it tops out at 2 columns past 4).
+const MAX_MODELS = 6;
+
 // Benchmark mode — runs one prompt against several AI models in parallel
 // and renders each model's OpenSCAD result in its own auto-rotating viewer
 // pane. Lives entirely outside the parametric/creative chat history; nothing
@@ -49,6 +52,7 @@ export function BenchmarkView() {
   const [paneStates, setPaneStates] = useState<Record<string, PaneState>>({});
   const [fullscreenId, setFullscreenId] = useState<string | null>(null);
   const [swapTargetId, setSwapTargetId] = useState<string | null>(null);
+  const [browserOpen, setBrowserOpen] = useState(false);
   const config = useBenchmarkConfig();
   const { selected, setSelected } = useBenchmarkSelection(config.models);
   const abortRef = useRef<AbortController | null>(null);
@@ -193,30 +197,24 @@ export function BenchmarkView() {
     if (fullscreenId === oldId) setFullscreenId(null);
   };
 
+  // Toggle a model in/out of the lineup from the browser's multi mode.
+  // Removing a model that owned a pane drops that pane (and its state via
+  // the existing reconciliation effect).
+  const handleToggle = (id: string) => {
+    if (selected.includes(id)) {
+      setSelected(selected.filter((x) => x !== id));
+      if (fullscreenId === id) setFullscreenId(null);
+      return;
+    }
+    if (selected.length >= MAX_MODELS) return;
+    setSelected([...selected, id]);
+  };
+
+  const showAddTile =
+    config.configured && selected.length < MAX_MODELS && !isRunning;
+
   return (
     <div className="flex h-full min-w-0 flex-1 flex-col bg-adam-background-1">
-      <header className="border-b border-adam-neutral-800/60 px-6 py-4 md:px-20 md:py-4">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-6 gap-y-3">
-          <div className="flex items-baseline gap-3">
-            <h1 className="text-xl font-medium text-adam-neutral-10">
-              Benchmark
-            </h1>
-            <span className="text-xs text-adam-neutral-500">
-              Same prompt, side-by-side AI models.
-            </span>
-          </div>
-          {config.configured && config.models.length > 0 && (
-            <div className="ml-auto">
-              <BenchmarkModelPicker
-                available={config.models}
-                selected={selected}
-                onChange={setSelected}
-              />
-            </div>
-          )}
-        </div>
-      </header>
-
       <div className="flex flex-1 flex-col overflow-auto">
         {config.isLoading ? (
           <div className="flex flex-1 items-center justify-center">
@@ -227,11 +225,17 @@ export function BenchmarkView() {
             <SetupCard error={config.error} />
           </div>
         ) : selected.length === 0 ? (
-          <div className="flex flex-1 items-center justify-center px-6 text-sm text-adam-neutral-500">
-            Pick at least one model above to lay out viewer panes.
+          <div className="flex flex-1 items-center justify-center px-6">
+            <div className="w-full max-w-md">
+              <BenchmarkAddTile
+                selectedCount={0}
+                maxSelected={MAX_MODELS}
+                onClick={() => setBrowserOpen(true)}
+              />
+            </div>
           </div>
         ) : (
-          <BenchmarkGrid count={selected.length}>
+          <BenchmarkGrid count={selected.length + (showAddTile ? 1 : 0)}>
             {selected.map((id) => {
               const model = config.models.find((m) => m.id === id);
               if (!model) return null;
@@ -252,9 +256,27 @@ export function BenchmarkView() {
                 />
               );
             })}
+            {showAddTile && (
+              <BenchmarkAddTile
+                key="__add__"
+                selectedCount={selected.length}
+                maxSelected={MAX_MODELS}
+                onClick={() => setBrowserOpen(true)}
+              />
+            )}
           </BenchmarkGrid>
         )}
       </div>
+
+      <BenchmarkModelBrowser
+        open={browserOpen}
+        onOpenChange={setBrowserOpen}
+        available={config.models}
+        selectedIds={selected}
+        maxSelected={MAX_MODELS}
+        mode="multi"
+        onSelect={handleToggle}
+      />
 
       <BenchmarkModelBrowser
         open={swapTargetId !== null}
@@ -263,7 +285,7 @@ export function BenchmarkView() {
         }}
         available={config.models}
         selectedIds={selected}
-        maxSelected={6}
+        maxSelected={MAX_MODELS}
         mode="replace"
         replaceTargetId={swapTargetId}
         onSelect={(newId) => {
