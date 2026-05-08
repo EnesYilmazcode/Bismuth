@@ -1,10 +1,25 @@
 import { useEffect, useState } from 'react';
 
+export interface BenchmarkModelPricing {
+  /** OpenRouter list price for input tokens, in USD per 1M tokens. */
+  promptUsdPerMTok: number;
+  /** OpenRouter list price for output tokens, in USD per 1M tokens. */
+  completionUsdPerMTok: number;
+  /**
+   * Estimated cost of one benchmark run, in USD. Computed by the bridge
+   * using a fixed token budget (EST_INPUT_TOKENS + EST_OUTPUT_TOKENS in
+   * `bridge/openrouter.mjs`) — meant as a guide, not a billing quote.
+   */
+  estPerRunUsd: number;
+}
+
 export interface BenchmarkModel {
   id: string;
   name: string;
   vendor: string;
   description?: string;
+  /** Absent when the bridge couldn't reach the pricing endpoint. */
+  pricing?: BenchmarkModelPricing;
 }
 
 interface BenchmarkConfig {

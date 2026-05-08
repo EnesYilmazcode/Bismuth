@@ -86,8 +86,76 @@ export function hasOpenRouterKey() {
   return !!(process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_API_KEY.trim());
 }
 
+// Token budget used to convert OpenRouter's per-token list price into a
+// human-readable "estimated cost per run" chip. These are rough averages
+// from the system prompt + a typical OpenSCAD response — meant as a
+// guide, not a guarantee, hence the "~" prefix on the chip.
+const EST_INPUT_TOKENS = 350;
+const EST_OUTPUT_TOKENS = 2000;
+
+// Populated once at bridge startup by loadPricing(). Maps OpenRouter
+// model id → per-token prices (USD). Empty map is the "pricing
+// unavailable" sentinel — listBenchmarkModels() omits the field.
+let _priceMap = new Map();
+
+export async function fetchOpenRouterPricing() {
+  if (!hasOpenRouterKey()) return new Map();
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/models', {
+      headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'HTTP-Referer': 'http://127.0.0.1:3000/bismuth/',
+        'X-Title': 'Bismuth Benchmark',
+      },
+    });
+    if (!res.ok) return new Map();
+    const json = await res.json();
+    const out = new Map();
+    for (const m of json?.data ?? []) {
+      const p = m?.pricing;
+      const prompt = p?.prompt ? Number(p.prompt) : NaN;
+      const completion = p?.completion ? Number(p.completion) : NaN;
+      if (!m?.id || !Number.isFinite(prompt) || !Number.isFinite(completion))
+        continue;
+      out.set(m.id, { promptUsdPerTok: prompt, completionUsdPerTok: completion });
+    }
+    return out;
+  } catch {
+    return new Map();
+  }
+}
+
+// Idempotent: safe to call repeatedly. Designed to be awaited once at
+// bridge startup so /benchmark-models can serve pricing immediately.
+export async function loadPricing() {
+  const map = await fetchOpenRouterPricing();
+  if (map.size > 0) _priceMap = map;
+  // Report how many of OUR curated models matched, not the size of the
+  // upstream catalog (which has hundreds).
+  let matched = 0;
+  for (const m of BENCHMARK_MODELS) if (map.has(m.id)) matched++;
+  return { matched, total: BENCHMARK_MODELS.length };
+}
+
+function priceFor(id) {
+  const p = _priceMap.get(id);
+  if (!p) return null;
+  // Convert per-token prices to per-million-token (the unit OpenRouter and
+  // others quote in) for the price chip; pre-compute the est-per-run so
+  // the frontend doesn't have to.
+  const promptUsdPerMTok = p.promptUsdPerTok * 1_000_000;
+  const completionUsdPerMTok = p.completionUsdPerTok * 1_000_000;
+  const estPerRunUsd =
+    p.promptUsdPerTok * EST_INPUT_TOKENS +
+    p.completionUsdPerTok * EST_OUTPUT_TOKENS;
+  return { promptUsdPerMTok, completionUsdPerMTok, estPerRunUsd };
+}
+
 export function listBenchmarkModels() {
-  return BENCHMARK_MODELS.map((m) => ({ ...m }));
+  return BENCHMARK_MODELS.map((m) => {
+    const pricing = priceFor(m.id);
+    return pricing ? { ...m, pricing } : { ...m };
+  });
 }
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';

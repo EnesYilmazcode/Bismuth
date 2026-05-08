@@ -14,10 +14,22 @@ import { loadEnv } from './env.mjs';
 import {
   hasOpenRouterKey,
   listBenchmarkModels,
+  loadPricing,
   streamCompletion,
 } from './openrouter.mjs';
 
 loadEnv();
+
+// Pre-fetch OpenRouter pricing so /benchmark-models can serve it on the
+// very first request. We don't crash on failure — the page degrades to
+// no price chips, which is fine.
+if (hasOpenRouterKey()) {
+  loadPricing().then(
+    ({ matched, total }) =>
+      console.log(`[bridge] loaded pricing for ${matched}/${total} models`),
+    () => console.log('[bridge] pricing unavailable, continuing'),
+  );
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = __dirname;
