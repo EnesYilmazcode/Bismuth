@@ -237,11 +237,12 @@ export function BenchmarkView() {
             </div>
           </div>
         ) : (
-          <BenchmarkGrid count={selected.length + (showAddTile ? 1 : 0)}>
-            {selected.map((id) => {
+          <BenchmarkGrid count={selected.length}>
+            {selected.map((id, i) => {
               const model = config.models.find((m) => m.id === id);
               if (!model) return null;
               const pane = paneStates[id] ?? INITIAL_PANE;
+              const isLast = i === selected.length - 1;
               return (
                 <BenchmarkPane
                   key={id}
@@ -255,17 +256,14 @@ export function BenchmarkView() {
                   onSwapClick={
                     isRunning ? undefined : () => setSwapTargetId(id)
                   }
+                  onAddClick={
+                    isLast && showAddTile
+                      ? () => setBrowserOpen(true)
+                      : undefined
+                  }
                 />
               );
             })}
-            {showAddTile && (
-              <BenchmarkAddTile
-                key="__add__"
-                selectedCount={selected.length}
-                maxSelected={MAX_MODELS}
-                onClick={() => setBrowserOpen(true)}
-              />
-            )}
           </BenchmarkGrid>
         )}
       </div>

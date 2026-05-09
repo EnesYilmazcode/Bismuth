@@ -3,6 +3,7 @@ import {
   ChevronDown,
   Loader2,
   Maximize2,
+  Plus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BenchmarkModel } from '@/hooks/useBenchmarkConfig';
@@ -26,6 +27,12 @@ interface BenchmarkPaneProps {
   onFullscreen?: () => void;
   /** When set, the model name in the header becomes a clickable swap target. */
   onSwapClick?: () => void;
+  /**
+   * When set, renders a + button in the right cluster of the header that
+   * opens the model browser to add another pane. Wired only on the last
+   * pane in the grid so we don't show six redundant + buttons.
+   */
+  onAddClick?: () => void;
 }
 
 const STATUS_LABELS: Record<BenchmarkStatus, string> = {
@@ -53,6 +60,7 @@ export function BenchmarkPane({
   error,
   onFullscreen,
   onSwapClick,
+  onAddClick,
 }: BenchmarkPaneProps) {
   const showStreamPeek = status === 'streaming' && streaming.length > 0;
   // Tooltip carries vendor + status; visible row stays one line. The dot
@@ -111,6 +119,17 @@ export function BenchmarkPane({
               className="rounded p-1 text-adam-neutral-400 opacity-0 transition-opacity hover:bg-adam-neutral-800 hover:text-adam-text-primary group-hover:opacity-100 focus:opacity-100"
             >
               <Maximize2 className="h-3.5 w-3.5" />
+            </button>
+          )}
+          {onAddClick && (
+            <button
+              type="button"
+              onClick={onAddClick}
+              aria-label="Add another model"
+              title="Add another model"
+              className="rounded-md border border-adam-neutral-700 p-1 text-adam-neutral-300 transition-colors hover:border-adam-blue/60 hover:bg-adam-neutral-800 hover:text-adam-blue"
+            >
+              <Plus className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
