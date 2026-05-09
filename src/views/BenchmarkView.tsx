@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+  ArrowUp,
   ExternalLink,
   KeyRound,
   Loader2,
-  Send,
   Square,
   X,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 import { useBenchmarkConfig } from '@/hooks/useBenchmarkConfig';
 import { useBenchmarkSelection } from '@/hooks/useBenchmarkSelection';
 import { BenchmarkAddTile } from '@/components/benchmark/BenchmarkAddTile';
@@ -343,7 +344,7 @@ export function BenchmarkView() {
           )}
         </div>
         <div className="mx-auto w-full max-w-6xl">
-          <div className="overflow-hidden rounded-xl border border-adam-neutral-700 bg-adam-background-2 focus-within:border-adam-neutral-500">
+          <div className="relative rounded-xl border border-adam-neutral-700 bg-adam-background-2 focus-within:border-adam-neutral-500">
             <Textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
@@ -355,40 +356,50 @@ export function BenchmarkView() {
               }}
               placeholder="e.g. a coffee mug with a generous handle and a wall thickness slider"
               rows={2}
-              className="block w-full resize-none border-0 bg-transparent px-3 py-2.5 text-sm text-adam-text-primary placeholder:text-adam-neutral-500 focus-visible:ring-0 focus-visible:ring-offset-0"
+              // pr-14 reserves space for the absolutely-positioned send
+              // button so long prompts don't slide under it.
+              className="block w-full resize-none border-0 bg-transparent px-3 py-2.5 pr-14 text-sm text-adam-text-primary placeholder:text-adam-neutral-500 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
-            <div className="flex items-center justify-between gap-3 border-t border-adam-neutral-700 px-3 py-2">
-              <span className="truncate text-[11px] text-adam-neutral-500">
-                {!config.configured
-                  ? 'Add OPENROUTER_API_KEY to .env.local to enable Run.'
-                  : selected.length === 0
-                    ? 'Pick at least one model before running.'
-                    : `${selected.length} model${selected.length === 1 ? '' : 's'} ready · ⌘/Ctrl + Enter`}
-              </span>
-              {isRunning ? (
-                <button
-                  type="button"
-                  onClick={handleAbort}
-                  aria-label="Stop benchmark"
-                  title="Stop benchmark"
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-adam-neutral-600 bg-adam-bg-secondary-dark text-adam-text-primary hover:bg-adam-neutral-800"
-                >
-                  <Square className="h-3.5 w-3.5 fill-current" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={!canSubmit}
-                  aria-label="Run benchmark"
-                  title="Run benchmark"
-                  className="flex h-8 w-8 items-center justify-center rounded-md bg-adam-blue text-adam-neutral-50 transition-colors hover:bg-adam-blue/80 disabled:cursor-not-allowed disabled:bg-adam-neutral-700 disabled:text-adam-neutral-400"
-                >
-                  <Send className="h-4 w-4" />
-                </button>
-              )}
-            </div>
+            {/* Send / stop overlay — bottom-right of the textarea, on the
+                same vertical line as the typed text. The send button
+                fades in from the right when there's content; while
+                running, the stop button takes its place at full opacity. */}
+            {isRunning ? (
+              <button
+                type="button"
+                onClick={handleAbort}
+                aria-label="Stop benchmark"
+                title="Stop benchmark"
+                className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-md border border-adam-neutral-600 bg-adam-bg-secondary-dark text-adam-text-primary transition-all hover:bg-adam-neutral-800"
+              >
+                <Square className="h-3.5 w-3.5 fill-current" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={!canSubmit}
+                aria-label="Run benchmark"
+                title="Run benchmark"
+                className={cn(
+                  'absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-md bg-adam-blue text-adam-neutral-50 transition-all duration-150 ease-out hover:bg-adam-blue/80',
+                  'disabled:cursor-not-allowed disabled:bg-adam-neutral-700 disabled:text-adam-neutral-400',
+                  canSubmit
+                    ? 'translate-x-0 opacity-100'
+                    : 'pointer-events-none translate-x-2 opacity-0',
+                )}
+              >
+                <ArrowUp className="h-4 w-4" strokeWidth={2.5} />
+              </button>
+            )}
           </div>
+          <p className="mt-2 px-1 text-[11px] text-adam-neutral-500">
+            {!config.configured
+              ? 'Add OPENROUTER_API_KEY to .env.local to enable Run.'
+              : selected.length === 0
+                ? 'Pick at least one model before running.'
+                : `${selected.length} model${selected.length === 1 ? '' : 's'} ready · ⌘/Ctrl + Enter`}
+          </p>
         </div>
       </div>
     </div>
