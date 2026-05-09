@@ -1,7 +1,6 @@
 import {
   AlertTriangle,
   ChevronDown,
-  Hourglass,
   Loader2,
   Maximize2,
 } from 'lucide-react';
@@ -184,12 +183,7 @@ function PaneOverlay({
       </div>
     );
   }
-  return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-      <Hourglass className="h-5 w-5 text-adam-neutral-500" />
-      <span className="text-[11px] uppercase tracking-wider text-adam-neutral-500">
-        {status === 'idle' ? 'idle' : 'queued'}
-      </span>
-    </div>
-  );
+  // Idle = empty pane, no overlay. The dot color in the header tells the
+  // user the pane is idle; spelling it out a third time is noise.
+  return null;
 }
