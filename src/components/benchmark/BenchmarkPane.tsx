@@ -1,6 +1,7 @@
 import {
   AlertTriangle,
   ChevronDown,
+  Code2,
   Loader2,
   Maximize2,
   Plus,
@@ -26,6 +27,8 @@ interface BenchmarkPaneProps {
   durationMs: number | null;
   error?: string | null;
   onFullscreen?: () => void;
+  /** Opens a dialog with the model's SCAD source for inspection. */
+  onViewCode?: () => void;
   /** When set, the model name in the header becomes a clickable swap target. */
   onSwapClick?: () => void;
   /**
@@ -65,6 +68,7 @@ export function BenchmarkPane({
   durationMs,
   error,
   onFullscreen,
+  onViewCode,
   onSwapClick,
   onAddClick,
   onRemove,
@@ -130,6 +134,17 @@ export function BenchmarkPane({
             <span className="rounded-md border border-adam-neutral-700 bg-adam-neutral-900 px-1.5 py-0.5 font-mono text-[10px] text-adam-neutral-300">
               {formatDuration(durationMs)}
             </span>
+          )}
+          {onViewCode && (status === 'done' || status === 'error') && (
+            <button
+              type="button"
+              onClick={onViewCode}
+              aria-label={`View ${model.name}'s SCAD source`}
+              title="View SCAD source"
+              className="rounded p-1 text-adam-neutral-400 opacity-0 transition-opacity hover:bg-adam-neutral-800 hover:text-adam-text-primary group-hover:opacity-100 focus:opacity-100"
+            >
+              <Code2 className="h-3.5 w-3.5" />
+            </button>
           )}
           {onFullscreen && (
             <button

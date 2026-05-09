@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { useBenchmarkConfig } from '@/hooks/useBenchmarkConfig';
 import { useBenchmarkSelection } from '@/hooks/useBenchmarkSelection';
 import { BenchmarkAddTile } from '@/components/benchmark/BenchmarkAddTile';
+import { BenchmarkCodeDialog } from '@/components/benchmark/BenchmarkCodeDialog';
 import { BenchmarkExamples } from '@/components/benchmark/BenchmarkExamples';
 import { BenchmarkModelBrowser } from '@/components/benchmark/BenchmarkModelBrowser';
 import { BenchmarkGrid } from '@/components/benchmark/BenchmarkGrid';
@@ -54,6 +55,7 @@ export function BenchmarkView() {
   const [fullscreenId, setFullscreenId] = useState<string | null>(null);
   const [swapTargetId, setSwapTargetId] = useState<string | null>(null);
   const [browserOpen, setBrowserOpen] = useState(false);
+  const [codeViewerId, setCodeViewerId] = useState<string | null>(null);
   const config = useBenchmarkConfig();
   const { selected, setSelected } = useBenchmarkSelection(config.models);
   const abortRef = useRef<AbortController | null>(null);
@@ -254,6 +256,11 @@ export function BenchmarkView() {
                   durationMs={pane.durationMs}
                   error={pane.error}
                   onFullscreen={() => setFullscreenId(id)}
+                  onViewCode={
+                    pane.code || pane.streaming
+                      ? () => setCodeViewerId(id)
+                      : undefined
+                  }
                   onSwapClick={
                     isRunning ? undefined : () => setSwapTargetId(id)
                   }
@@ -296,6 +303,25 @@ export function BenchmarkView() {
           if (swapTargetId) handleSwap(swapTargetId, newId);
           setSwapTargetId(null);
         }}
+      />
+
+      <BenchmarkCodeDialog
+        open={codeViewerId !== null}
+        onOpenChange={(open) => {
+          if (!open) setCodeViewerId(null);
+        }}
+        model={
+          codeViewerId
+            ? (config.models.find((m) => m.id === codeViewerId) ?? null)
+            : null
+        }
+        code={
+          codeViewerId
+            ? (paneStates[codeViewerId]?.code ||
+                paneStates[codeViewerId]?.streaming ||
+                '')
+            : ''
+        }
       />
 
       {fullscreenId &&
