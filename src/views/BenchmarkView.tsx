@@ -261,6 +261,9 @@ export function BenchmarkView() {
                       ? () => setBrowserOpen(true)
                       : undefined
                   }
+                  onRemove={
+                    isRunning ? undefined : () => handleToggle(id)
+                  }
                 />
               );
             })}

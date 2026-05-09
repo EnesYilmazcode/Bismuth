@@ -4,6 +4,7 @@ import {
   Loader2,
   Maximize2,
   Plus,
+  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BenchmarkModel } from '@/hooks/useBenchmarkConfig';
@@ -33,6 +34,11 @@ interface BenchmarkPaneProps {
    * pane in the grid so we don't show six redundant + buttons.
    */
   onAddClick?: () => void;
+  /**
+   * When set, a hover-revealed X appears next to the model dropdown so
+   * the user can drop this pane from the lineup with one click.
+   */
+  onRemove?: () => void;
 }
 
 const STATUS_LABELS: Record<BenchmarkStatus, string> = {
@@ -61,6 +67,7 @@ export function BenchmarkPane({
   onFullscreen,
   onSwapClick,
   onAddClick,
+  onRemove,
 }: BenchmarkPaneProps) {
   const showStreamPeek = status === 'streaming' && streaming.length > 0;
   // Tooltip carries vendor + status; visible row stays one line. The dot
@@ -87,24 +94,37 @@ export function BenchmarkPane({
   return (
     <div className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-adam-neutral-700 bg-adam-bg-secondary-dark">
       <header className="flex items-center justify-between gap-3 border-b border-adam-neutral-700 bg-adam-bg-secondary-dark/60 px-3 py-1.5">
-        {onSwapClick ? (
-          <button
-            type="button"
-            onClick={onSwapClick}
-            aria-label={`Swap ${model.name} for another model`}
-            title={tooltip}
-            className="-mx-1 flex min-w-0 items-center gap-2 rounded-md px-1 py-0.5 hover:bg-adam-neutral-800 focus:bg-adam-neutral-800 focus:outline-none"
-          >
-            {identity}
-          </button>
-        ) : (
-          <div
-            className="flex min-w-0 items-center gap-2"
-            title={tooltip}
-          >
-            {identity}
-          </div>
-        )}
+        <div className="group/identity flex min-w-0 items-center gap-1">
+          {onSwapClick ? (
+            <button
+              type="button"
+              onClick={onSwapClick}
+              aria-label={`Swap ${model.name} for another model`}
+              title={tooltip}
+              className="-mx-1 flex min-w-0 items-center gap-2 rounded-md px-1 py-0.5 hover:bg-adam-neutral-800 focus:bg-adam-neutral-800 focus:outline-none"
+            >
+              {identity}
+            </button>
+          ) : (
+            <div
+              className="flex min-w-0 items-center gap-2"
+              title={tooltip}
+            >
+              {identity}
+            </div>
+          )}
+          {onRemove && (
+            <button
+              type="button"
+              onClick={onRemove}
+              aria-label={`Remove ${model.name} from the lineup`}
+              title="Remove from lineup"
+              className="rounded p-1 text-adam-neutral-400 opacity-0 transition-opacity hover:bg-red-500/15 hover:text-red-400 focus:opacity-100 group-hover/identity:opacity-100"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
+        </div>
         <div className="flex shrink-0 items-center gap-1">
           {durationMs !== null && status !== 'streaming' && (
             <span className="rounded-md border border-adam-neutral-700 bg-adam-neutral-900 px-1.5 py-0.5 font-mono text-[10px] text-adam-neutral-300">
