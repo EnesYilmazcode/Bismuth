@@ -28,7 +28,10 @@ export function BenchmarkGrid({ count, children }: BenchmarkGridProps) {
   return (
     <div
       className={cn(
-        'grid h-full min-h-[420px] w-full gap-3 p-3',
+        // auto-rows-fr makes every row share the available height equally,
+        // so the add-tile's intrinsic size can't pull its row taller than
+        // the panes in the row above.
+        'grid h-full min-h-[420px] w-full auto-rows-fr gap-3 p-3',
         gridClassFor(count),
       )}
     >

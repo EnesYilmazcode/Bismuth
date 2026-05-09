@@ -26,7 +26,7 @@ export function BenchmarkAddTile({
         atCap ? 'Model lineup at capacity' : 'Add another model to the lineup'
       }
       className={cn(
-        'group relative flex h-full min-h-[280px] w-full flex-col items-center justify-center gap-3',
+        'group relative flex h-full w-full flex-col items-center justify-center gap-3',
         'rounded-lg border border-dashed border-adam-neutral-700 bg-adam-bg-secondary-dark/30',
         'transition-colors',
         atCap

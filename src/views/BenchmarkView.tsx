@@ -226,7 +226,7 @@ export function BenchmarkView() {
           </div>
         ) : selected.length === 0 ? (
           <div className="flex flex-1 items-center justify-center px-6">
-            <div className="w-full max-w-md">
+            <div className="h-[280px] w-full max-w-md">
               <BenchmarkAddTile
                 selectedCount={0}
                 maxSelected={MAX_MODELS}
