@@ -215,7 +215,9 @@ export function BenchmarkView() {
 
   return (
     <div className="flex h-full min-w-0 flex-1 flex-col bg-adam-background-1">
-      <div className="flex flex-1 flex-col overflow-auto">
+      {/* Top + left padding clears the fixed sidebar-toggle button (Layout.tsx)
+          so the first pane's header doesn't run under it. */}
+      <div className="flex flex-1 flex-col overflow-auto pl-10 pt-10">
         {config.isLoading ? (
           <div className="flex flex-1 items-center justify-center">
             <Loader2 className="h-5 w-5 animate-spin text-adam-neutral-400" />
