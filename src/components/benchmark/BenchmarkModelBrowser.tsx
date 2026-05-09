@@ -164,7 +164,7 @@ export function BenchmarkModelBrowser({
         </div>
         {m.pricing && (
           <span
-            className="mt-0.5 shrink-0 rounded-md border border-adam-neutral-700 bg-adam-neutral-900 px-1.5 py-0.5 font-mono text-[10px] text-adam-neutral-300"
+            className="shrink-0 self-center rounded-md border border-adam-neutral-700 bg-adam-neutral-900 px-2 py-1 font-mono text-[11.5px] text-adam-neutral-200"
             title={`${m.pricing.promptUsdPerMTok.toFixed(2)} in / ${m.pricing.completionUsdPerMTok.toFixed(2)} out per 1M tokens · est ~350 in / ~2000 out`}
           >
             {formatPrice(m.pricing.estPerRunUsd)}
