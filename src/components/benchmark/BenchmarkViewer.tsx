@@ -9,12 +9,27 @@ import {
 import * as THREE from 'three';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { useOpenSCAD } from '@/hooks/useOpenSCAD';
+import OpenSCADError from '@/lib/OpenSCADError';
 
 interface BenchmarkViewerProps {
   code: string;
   color?: string;
   /** Rotations per minute around the Y axis. 0 disables auto-rotation. */
   rotationRpm?: number;
+}
+
+// OpenSCAD WASM emits multi-line stderr on compile failure (a banner about
+// "ERROR: Parser error" plus follow-up lines, plus warnings). Pull the
+// first line that actually says something — usually the parser/eval line
+// with the line number — so the user sees what broke instead of a
+// generic "compile failed" string.
+function firstUsefulErrorLine(err: unknown): string {
+  if (err instanceof OpenSCADError && err.stdErr.length > 0) {
+    const line = err.stdErr.find((l) => /ERROR|WARNING/i.test(l)) ?? err.stdErr[0];
+    return line.replace(/^ERROR:\s*/i, '').trim();
+  }
+  if (err instanceof Error && err.message) return err.message;
+  return 'OpenSCAD WASM rejected the source';
 }
 
 // Minimal 3D viewer for a single benchmark pane. Lighter than the parametric
@@ -31,7 +46,7 @@ export function BenchmarkViewer({
   // control treats as the rotation speed parameter directly when scaled by
   // their internal constant of 60. In practice: speed ≈ rpm × 0.6.
   const autoRotateSpeed = rotationRpm * 0.6;
-  const { compileScad, isCompiling, output, isError } = useOpenSCAD();
+  const { compileScad, isCompiling, output, isError, error } = useOpenSCAD();
   const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
   const lastGeomRef = useRef<THREE.BufferGeometry | null>(null);
 
@@ -131,8 +146,13 @@ export function BenchmarkViewer({
         </div>
       )}
       {isError && !isCompiling && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-[11px] text-red-400">
-          OpenSCAD compile failed
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1.5 px-4 text-center">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-red-400">
+            compile failed
+          </span>
+          <p className="line-clamp-3 max-w-[320px] font-mono text-[10.5px] leading-relaxed text-adam-neutral-300">
+            {firstUsefulErrorLine(error)}
+          </p>
         </div>
       )}
     </div>
