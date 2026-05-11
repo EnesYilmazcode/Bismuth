@@ -115,7 +115,7 @@ parametric mug?" comparisons without juggling multiple API keys yourself.
 This path doesn't go through Claude Code — the bridge calls OpenRouter
 directly, so it works whether or not your Claude session is watching the
 inbox. The curated catalog covers Claude (Sonnet 4.5, Opus 4.1), GPT-5,
-GPT-4o, o3, Gemini 2.5 Pro / 2.0 Flash, DeepSeek V3, Qwen 2.5 Coder, Llama
+GPT-4o, o3, Gemini 2.5 Pro / 2.0 Flash, DeepSeek V3, Qwen3 Coder, Llama
 3.3 70B, Mistral Large, and Grok 3. Up to 6 models fit on one screen.
 
 **Setup** — copy `.env.local.template` to `.env.local`, drop in your key, and
