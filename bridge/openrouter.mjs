@@ -57,8 +57,8 @@ export const BENCHMARK_MODELS = [
     description: 'Open-weights, strong at code generation.',
   },
   {
-    id: 'qwen/qwen-2.5-coder-32b-instruct',
-    name: 'Qwen 2.5 Coder 32B',
+    id: 'qwen/qwen3-coder-30b-a3b-instruct',
+    name: 'Qwen3 Coder 30B',
     vendor: 'Alibaba',
     description: 'Code-tuned open model.',
   },
