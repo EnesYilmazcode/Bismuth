@@ -248,6 +248,17 @@ export async function streamCompletion({ model, prompt, signal, onEvent }) {
           } catch {
             continue;
           }
+          // OpenRouter can deliver a per-provider 5xx as a regular SSE
+          // chunk with `choices: []` and an `error:` field, then keep
+          // trickling empty deltas. Without this check the stream ends
+          // "cleanly" with a few-token fragment, and OpenSCAD blames the
+          // model for invalid source.
+          if (json?.error) {
+            const provider = json?.provider ? ` (${json.provider})` : '';
+            const code = json.error.code ?? '?';
+            const msg = json.error.message ?? 'unknown error';
+            throw new Error(`Upstream error${provider}: ${code} ${msg}`);
+          }
           const delta = json?.choices?.[0]?.delta?.content;
           if (typeof delta === 'string' && delta.length > 0) {
             accumulated += delta;
