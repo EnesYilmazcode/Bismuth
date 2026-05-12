@@ -182,7 +182,8 @@ Conventions:
 - Group related params with /* [Group Name] */ on its own line.
 - Keep $fn at 24–40 at the file level.
 - Prefer linear_extrude(offset(square(...))) for rounded boxes. Avoid hull() of more than 4 primitives at large coordinates and avoid minkowski().
-- Center the geometry near the origin so the auto-rotating preview shows it well.
+- Build with +Z as up. The preview auto-rotates around the Z axis, so the object should stand upright; tilted geometry looks broken in stills.
+- Center the geometry horizontally on the origin and sit it on z = 0 (do not center it vertically through the origin). The auto-rotating camera frames better when the object rests on the implicit floor.
 
 Choosing primitives for the geometry:
 - For axially symmetric shapes (vases, bottles, lamps, the body of a chess piece): use rotate_extrude() of a 2D polygon profile. This is the single most useful pattern for organic shapes and almost always beats hand-built CSG.
