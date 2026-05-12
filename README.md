@@ -134,9 +134,11 @@ you pick.
 
 **The UI**
 
-- **Example prompts** — eight CAD starters appear under the input on first
-  load (mug, hex bolt, gridfinity bin, lampshade, planter, phone stand,
-  faceted vase, gear pair). Click one to fill the textarea.
+- **Example prompts** — five CAD starters appear under the input on first
+  load (chess knight, coffee mug with a heart-shaped handle, spiral
+  staircase, meshing gears, faceted vase). Each is a plain-object prompt
+  that covers a distinct CAD-reasoning archetype (figural, hollow body,
+  helical, mechanical, rotational). Click one to fill the textarea.
 - **Model browser** — search-as-you-type palette with vendor-grouped rows
   and one-line descriptions. Filters across name, vendor, and capability
   ("claude", "anthropic", "fast" all work). ↑↓ navigates, Enter toggles,
@@ -152,7 +154,13 @@ you pick.
 The wire format between the frontend and the bridge is one ND-JSON event
 per line: `{model, type: 'start' | 'delta' | 'done' | 'error', ...}`.
 `bridge/openrouter.mjs` owns the curated list and the system prompt that
-biases each model toward valid OpenSCAD with slider-friendly parameters.
+biases each model toward valid OpenSCAD: a planning rubric (open the
+file with a `// Parts:` decomposition comment), primitive-choice
+guidance (prefer `rotate_extrude` and stacked unions over
+`linear_extrude` for organic shapes), orientation hints (+Z up, base
+on z = 0), and two worked examples (a vase and a snowman). The
+benchmark renders one static pane per model, so the prompt deliberately
+omits the slider syntax used in parametric mode.
 
 ## project structure
 
