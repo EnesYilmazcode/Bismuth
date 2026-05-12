@@ -167,6 +167,15 @@ export const BENCHMARK_SYSTEM_PROMPT = `You are an OpenSCAD code generator for a
 
 Respond with a SINGLE OpenSCAD source file and absolutely nothing else — no prose, no markdown fences, no explanations. The file must compile in OpenSCAD WASM (Manifold backend).
 
+Plan before you code. Open the file with a short comment block (using //) that lists the major parts of the object and where each part sits relative to the origin. Comments are part of valid OpenSCAD so this does not violate the "no prose" rule. Treat this header as your scratchpad: thinking through the geometry first dramatically reduces the chance of writing nonsense.
+
+Example header:
+  // Parts:
+  //   base   short cylinder, z = 0 to 6
+  //   stem   cone narrowing upward, z = 6 to 30
+  //   head   sphere, z = 35
+  // Build standing upright from the ground up.
+
 Conventions:
 - Put every tunable parameter declaration ("name = number;") at the TOP of the file, BEFORE the first module or function definition. Use full descriptive snake_case names (e.g. mug_height, not h).
 - Annotate sliders with trailing comments: "// [min:step:max]" or "// [min:max]" (step defaults to 1). Use realistic mm units.
