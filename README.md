@@ -112,6 +112,8 @@ When the user drags a slider, the bridge re-parses without round-tripping throug
 in its own auto-rotating 3D pane. Useful for "which model writes the cleanest
 parametric mug?" comparisons without juggling multiple API keys yourself.
 
+![Benchmark mode comparing Claude Sonnet 4.5 and Grok 3 outputs for the prompt "A spiral staircase"](./public/bismuth-benchmark.png)
+
 This path doesn't go through Claude Code — the bridge calls OpenRouter
 directly, so it works whether or not your Claude session is watching the
 inbox. The curated catalog covers Claude (Sonnet 4.5, Opus 4.1), GPT-5,
