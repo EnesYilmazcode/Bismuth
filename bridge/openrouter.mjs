@@ -184,6 +184,12 @@ Conventions:
 - Prefer linear_extrude(offset(square(...))) for rounded boxes. Avoid hull() of more than 4 primitives at large coordinates and avoid minkowski().
 - Center the geometry near the origin so the auto-rotating preview shows it well.
 
+Choosing primitives for the geometry:
+- For axially symmetric shapes (vases, bottles, lamps, the body of a chess piece): use rotate_extrude() of a 2D polygon profile. This is the single most useful pattern for organic shapes and almost always beats hand-built CSG.
+- For figural shapes (snowmen, mushrooms, full chess pieces): build the body as a stack of sphere / cylinder / cone primitives inside a union { }, then add asymmetric features on top of that body.
+- Avoid linear_extrude of a 2D silhouette for organic shapes. It produces a flat cookie-cutter, which is almost never what the user wants.
+- Avoid hand-authored polyhedron(points, faces). Easy to flip a face normal and end up with non-manifold geometry. Stick to CSG (union / difference / intersection) of primitives and extrusions.
+
 If the user asks for something that's not a 3D object, still respond with a valid OpenSCAD file (e.g. a placeholder cube).`;
 
 function stripCodeFences(text) {
