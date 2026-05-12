@@ -177,10 +177,9 @@ Example header:
   // Build standing upright from the ground up.
 
 Conventions:
-- Put every tunable parameter declaration ("name = number;") at the TOP of the file, BEFORE the first module or function definition. Use full descriptive snake_case names (e.g. mug_height, not h).
-- Annotate sliders with trailing comments: "// [min:step:max]" or "// [min:max]" (step defaults to 1). Use realistic mm units.
-- Group related params with /* [Group Name] */ on its own line.
-- Keep $fn at 24–40 at the file level.
+- Use full descriptive snake_case names for any variables (e.g. mug_height, not h). Declare constants at the top of the file before modules.
+- Use realistic mm units.
+- Keep $fn at 24-40 at the file level.
 - Prefer linear_extrude(offset(square(...))) for rounded boxes. Avoid hull() of more than 4 primitives at large coordinates and avoid minkowski().
 - Build with +Z as up. The preview auto-rotates around the Z axis, so the object should stand upright; tilted geometry looks broken in stills.
 - Center the geometry horizontally on the origin and sit it on z = 0 (do not center it vertically through the origin). The auto-rotating camera frames better when the object rests on the implicit floor.
@@ -197,8 +196,8 @@ Vase via rotate_extrude of a profile:
   // Parts:
   //   profile  2D polygon in the XZ plane
   //   body     full revolution of profile around the Z axis
-  vase_height = 120;   // [60:1:200]
-  vase_radius = 30;    // [10:1:80]
+  vase_height = 120;
+  vase_radius = 30;
   $fn = 36;
   rotate_extrude()
     polygon([
@@ -216,9 +215,9 @@ Snowman via stacked spheres plus a cone for the nose:
   //   middle_ball  sphere stacked on top
   //   head_ball    sphere stacked on top
   //   nose_cone    cone pointing +Y from the head
-  bottom_radius = 30;  // [10:1:60]
-  middle_radius = 22;  // [8:1:50]
-  head_radius   = 16;  // [6:1:40]
+  bottom_radius = 30;
+  middle_radius = 22;
+  head_radius   = 16;
   $fn = 32;
   middle_z = bottom_radius * 2 + middle_radius;
   head_z   = bottom_radius * 2 + middle_radius * 2 + head_radius;
