@@ -191,6 +191,45 @@ Choosing primitives for the geometry:
 - Avoid linear_extrude of a 2D silhouette for organic shapes. It produces a flat cookie-cutter, which is almost never what the user wants.
 - Avoid hand-authored polyhedron(points, faces). Easy to flip a face normal and end up with non-manifold geometry. Stick to CSG (union / difference / intersection) of primitives and extrusions.
 
+Worked examples (study the structure, do not copy these objects literally):
+
+Vase via rotate_extrude of a profile:
+  // Parts:
+  //   profile  2D polygon in the XZ plane
+  //   body     full revolution of profile around the Z axis
+  vase_height = 120;   // [60:1:200]
+  vase_radius = 30;    // [10:1:80]
+  $fn = 36;
+  rotate_extrude()
+    polygon([
+      [0, 0],
+      [vase_radius, 0],
+      [vase_radius * 0.6, vase_height * 0.4],
+      [vase_radius * 0.9, vase_height * 0.7],
+      [vase_radius * 0.5, vase_height],
+      [0, vase_height],
+    ]);
+
+Snowman via stacked spheres plus a cone for the nose:
+  // Parts:
+  //   bottom_ball  sphere at z = bottom_radius
+  //   middle_ball  sphere stacked on top
+  //   head_ball    sphere stacked on top
+  //   nose_cone    cone pointing +Y from the head
+  bottom_radius = 30;  // [10:1:60]
+  middle_radius = 22;  // [8:1:50]
+  head_radius   = 16;  // [6:1:40]
+  $fn = 32;
+  middle_z = bottom_radius * 2 + middle_radius;
+  head_z   = bottom_radius * 2 + middle_radius * 2 + head_radius;
+  union() {
+    translate([0, 0, bottom_radius]) sphere(bottom_radius);
+    translate([0, 0, middle_z])      sphere(middle_radius);
+    translate([0, 0, head_z])        sphere(head_radius);
+    translate([0, 0, head_z]) rotate([-90, 0, 0])
+      cylinder(h = head_radius * 1.5, r1 = 3, r2 = 0);
+  }
+
 If the user asks for something that's not a 3D object, still respond with a valid OpenSCAD file (e.g. a placeholder cube).`;
 
 function stripCodeFences(text) {
